@@ -1,0 +1,3 @@
+Original sponza model and textures copyright held by Marko Dabrovic. 
+
+Obj files and cleaned up maps retrieved from http://hdri.cgtechniques.com/~sponza/files/
