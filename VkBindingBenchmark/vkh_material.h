@@ -41,9 +41,9 @@ namespace vkh
 		VkResult res = vkCreatePipelineLayout(ctxt.device, &pipelineLayoutInfo, nullptr, createInfo.outPipelineLayout);
 		checkf(res == VK_SUCCESS, "Error creating pipeline layout");
 
-		VkVertexInputBindingDescription bindingDescription = vkh::vertexInputBindingDescription(0, sizeof(vkh::Vertex), VK_VERTEX_INPUT_RATE_VERTEX);
+		const VertexRenderData* vertexLayout = vkh::Mesh::vertexRenderData();
 
-		const vkh::VertexRenderData* vertexLayout = vkh::Mesh::vertexRenderData();
+		VkVertexInputBindingDescription bindingDescription = vkh::vertexInputBindingDescription(0, vertexLayout->vertexSize, VK_VERTEX_INPUT_RATE_VERTEX);
 
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo = vkh::pipelineVertexInputStateCreateInfo();
 		vertexInputInfo.vertexBindingDescriptionCount = 1;
