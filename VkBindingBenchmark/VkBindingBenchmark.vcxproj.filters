@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\vkh">
+      <UniqueIdentifier>{eaa08c56-09ec-4b6e-b971-03944fb53f30}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\vkh">
+      <UniqueIdentifier>{e5618266-37d9-45ef-ae3d-9e7ab24afb8e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\os">
+      <UniqueIdentifier>{5200230f-9789-42f5-a51f-0421ffbe51f1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -22,7 +31,16 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="vkh_mesh.cpp">
+      <Filter>Source Files\vkh</Filter>
+    </ClCompile>
+    <ClCompile Include="vkh.cpp">
+      <Filter>Source Files\vkh</Filter>
+    </ClCompile>
+    <ClCompile Include="rendering.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="os_init.cpp">
+      <Filter>Source Files\os</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -41,35 +59,42 @@
     <ClInclude Include="timing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="vkh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vkh_alloc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vkh_initializers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vkh_material.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vkh_mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vkh_setup.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vkh_texture.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vkh_types.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mesh_loading.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="vkh.h">
+      <Filter>Header Files\vkh</Filter>
+    </ClInclude>
+    <ClInclude Include="vkh_alloc.h">
+      <Filter>Header Files\vkh</Filter>
+    </ClInclude>
+    <ClInclude Include="vkh_initializers.h">
+      <Filter>Header Files\vkh</Filter>
+    </ClInclude>
+    <ClInclude Include="vkh_material.h">
+      <Filter>Header Files\vkh</Filter>
+    </ClInclude>
+    <ClInclude Include="vkh_mesh.h">
+      <Filter>Header Files\vkh</Filter>
+    </ClInclude>
+    <ClInclude Include="vkh_setup.h">
+      <Filter>Header Files\vkh</Filter>
+    </ClInclude>
+    <ClInclude Include="vkh_texture.h">
+      <Filter>Header Files\vkh</Filter>
+    </ClInclude>
+    <ClInclude Include="vkh_types.h">
+      <Filter>Header Files\vkh</Filter>
+    </ClInclude>
+    <ClInclude Include="rendering.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\data\shader\common_vert.vert" />
+    <None Include="..\data\shader\debug_uvs.frag" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 #include "Common.h"
 #include "mesh_loading.h"
-
+#include "rendering.h"
 /*
 	Single threaded. Try to keep as much equal as possible, save for the experimental changes
 	Test - binding once with uniform buffers, binding once with ssbo, binding per object uniform data
@@ -12,6 +12,7 @@
 */
 
 vkh::VkhContext appContext;
+vkh::MeshAsset testMesh;
 
 void mainLoop();
 
@@ -36,9 +37,10 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int
 	meshLayout.push_back(vkh::EMeshVertexAttribute::UV0);
 	vkh::Mesh::setGlobalVertexLayout(meshLayout);
 
+	initRendering(appContext);
 
 	//load a test obj mesh
-	loadMesh("..\\data\\mesh\\f16.obj", appContext);
+	loadMesh("..\\data\\mesh\\f16.obj", appContext, testMesh);
 
 	mainLoop();
 
@@ -73,5 +75,7 @@ void mainLoop()
 			running = false;
 			break;
 		}
+		
+		render(nullptr, 0);
 	}
 }

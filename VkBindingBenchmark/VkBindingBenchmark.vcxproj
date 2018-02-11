@@ -125,6 +125,9 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mesh_loading.cpp" />
+    <ClCompile Include="os_init.cpp" />
+    <ClCompile Include="rendering.cpp" />
+    <ClCompile Include="vkh.cpp" />
     <ClCompile Include="vkh_mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -134,6 +137,7 @@
     <ClInclude Include="mesh_loading.h" />
     <ClInclude Include="os_init.h" />
     <ClInclude Include="os_input.h" />
+    <ClInclude Include="rendering.h" />
     <ClInclude Include="timing.h" />
     <ClInclude Include="vkh.h" />
     <ClInclude Include="vkh_alloc.h" />
@@ -143,6 +147,10 @@
     <ClInclude Include="vkh_setup.h" />
     <ClInclude Include="vkh_texture.h" />
     <ClInclude Include="vkh_types.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\data\shader\common_vert.vert" />
+    <None Include="..\data\shader\debug_uvs.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

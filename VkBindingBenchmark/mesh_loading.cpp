@@ -5,9 +5,9 @@
 #include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
 
-static const int defaultFlags = aiProcess_FlipWindingOrder | aiProcess_Triangulate | aiProcess_PreTransformVertices | aiProcess_CalcTangentSpace | aiProcess_GenSmoothNormals;
+static const int defaultFlags = aiProcess_OptimizeMeshes | aiProcess_JoinIdenticalVertices | aiProcess_FlipWindingOrder | aiProcess_Triangulate | aiProcess_CalcTangentSpace;
 
-uint32_t loadMesh(const char* filepath, vkh::VkhContext& ctxt)
+void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMesh)
 {
 	using namespace vkh;
 
@@ -27,10 +27,11 @@ uint32_t loadMesh(const char* filepath, vkh::VkhContext& ctxt)
 
 	if (scene)
 	{
-		for (uint32_t mIdx = 0; mIdx < scene->mNumMeshes; mIdx++)
+		for (uint32_t mIdx = 0; mIdx < 1 /*scene->mNumMeshes*/; mIdx++)
 		{
 			const aiMesh* mesh = scene->mMeshes[mIdx];
-
+			
+			uint32_t floatsPerVert = globalVertLayout->vertexSize / sizeof(float);
 			std::vector<float> vertexBuffer;
 			std::vector<uint32_t> indexBuffer;
 
@@ -107,13 +108,11 @@ uint32_t loadMesh(const char* filepath, vkh::VkhContext& ctxt)
 				indexBuffer.push_back(face.mIndices[2]);
 			}
 
-			MeshAsset m;
-			vkh::Mesh::make(m, ctxt, vertexBuffer.data(), mesh->mNumVertices, indexBuffer.data(), mesh->mNumFaces);
-			printf("hello");
+			checkf(vertexBuffer.size() / floatsPerVert == mesh->mNumVertices, "Incorrect number of verts created for mesh");
+
+			vkh::Mesh::make(outMesh, ctxt, vertexBuffer.data(), mesh->mNumVertices, indexBuffer.data(), mesh->mNumFaces);
 		}
 	}
 
 	aiDetachAllLogStreams();
-
-	return 0;
 }

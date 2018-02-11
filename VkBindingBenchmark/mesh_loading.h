@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
 #include "vkh.h"
+#include "vkh_mesh.h"
 
-uint32_t loadMesh(const char* filepath, vkh::VkhContext& ctxt);
+void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMesh);
