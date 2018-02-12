@@ -22,6 +22,9 @@
     <Filter Include="Source Files\os">
       <UniqueIdentifier>{5200230f-9789-42f5-a51f-0421ffbe51f1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\os">
+      <UniqueIdentifier>{d7a204c4-f127-4e7f-b248-a1ef48542cf2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -48,12 +51,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="file_utils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="os_init.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="os_input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="timing.h">
@@ -92,9 +89,19 @@
     <ClInclude Include="rendering.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="os_init.h">
+      <Filter>Header Files\os</Filter>
+    </ClInclude>
+    <ClInclude Include="os_input.h">
+      <Filter>Header Files\os</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\data\shader\common_vert.vert" />
-    <None Include="..\data\shader\debug_uvs.frag" />
+    <None Include="..\data\shader\common_vert.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\data\shader\debug_uvs.frag">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
