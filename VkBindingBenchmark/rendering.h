@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include "vkh.h"
+#include "vkh_mesh.h"
 
 struct DrawCall
 {
@@ -9,4 +10,4 @@ struct DrawCall
 };
 
 void initRendering(vkh::VkhContext& context);
-void render(DrawCall* drawCalls, uint32_t count);
+void render(vkh::MeshAsset* drawCalls, uint32_t count);

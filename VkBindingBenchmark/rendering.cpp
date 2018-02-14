@@ -1,5 +1,10 @@
 #include "rendering.h"
 #include "os_init.h"
+#include "vkh_material.h"
+#define GLM_FORCE_RADIANS
+//#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
+#include <glm/gtx/transform.hpp>
 
 struct RenderingData
 {
@@ -12,8 +17,19 @@ struct RenderingData
 
 RenderingData appData;
 
+struct DebugMaterial
+{
+	VkDescriptorSet					descriptorSet;
+	VkDescriptorSetLayout			descSetLayout;
+	VkPipelineLayout				pipelineLayout;
+	VkPipeline						graphicsPipeline;
+};
+
+DebugMaterial uvMaterial;
+
 void createMainRenderPass(vkh::VkhContext& ctxt);
 void createDepthBuffer();
+void loadDebugMaterial();
 
 void initRendering(vkh::VkhContext& context)
 {
@@ -31,7 +47,23 @@ void initRendering(vkh::VkhContext& context)
 		vkh::createCommandBuffer(appData.commandBuffers[i], context.gfxCommandPool, context.device);
 	}
 
+	loadDebugMaterial();
+
 }
+
+//TODO: remove this, this is only to confirm that the mesh loader is working
+void loadDebugMaterial()
+{
+	vkh::VkhMaterialCreateInfo createInfo = {};
+	createInfo.outPipeline = &uvMaterial.graphicsPipeline;
+	createInfo.outPipelineLayout = &uvMaterial.pipelineLayout;
+	createInfo.renderPass = appData.mainRenderPass;
+	createInfo.pushConstantStages = VK_SHADER_STAGE_VERTEX_BIT;
+	createInfo.pushConstantRange = sizeof(glm::mat4);
+	vkh::createBasicMaterial("..\\data\\_generated\\builtshaders\\common_vert.vert.spv", "..\\data\\_generated\\builtshaders\\debug_uvs.frag.spv", *appData.owningContext, createInfo);
+
+}
+
 
 void createDepthBuffer()
 {
@@ -89,7 +121,7 @@ void createMainRenderPass(vkh::VkhContext& ctxt)
 }
 
 
-void render(DrawCall* drawCalls, uint32_t count)
+void render(vkh::MeshAsset* drawCalls, uint32_t count)
 {
 	//acquire an image from the swap chain
 	uint32_t imageIndex;
@@ -134,9 +166,38 @@ void render(DrawCall* drawCalls, uint32_t count)
 
 	for (uint32_t i = 0; i < count; ++i)
 	{
-		DrawCall& dc = drawCalls[i];
+		const glm::vec3 center(0.0f);
+		const glm::vec3 up(0.f, 1.0f, 0.0f);
+		const glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, -1.0f), center, up);
+
+		vkCmdBindPipeline(appData.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, uvMaterial.graphicsPipeline);
+		glm::mat4 p = glm::perspective(glm::radians(60.0f), 800.0f/600.0f, -1.0f, 256.0f);
+
+		//from https://matthewwellings.com/blog/the-new-vulkan-coordinate-system/
+		//this flips the y coordinate back to positive == up, and readjusts depth range to match opengl
+		glm::mat4 vulkanCorrection = glm::mat4(
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, -1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 0.5f, 0.5f,
+			0.0f, 0.0f, 0.0f, 1.0f);
+
+		glm::mat4 vp = vulkanCorrection * p * view;
+		glm::mat4 mvp = vp *(glm::translate(glm::vec3(0.0f, 0.0f, 5.0f)) * glm::rotate(glm::radians(45.0f), glm::vec3(1,1,1)) * glm::scale(glm::vec3(3.0f, 3.0f, 3.0f)));
+
+		vkCmdPushConstants(
+			appData.commandBuffers[imageIndex],
+			uvMaterial.pipelineLayout,
+			VK_SHADER_STAGE_VERTEX_BIT,
+			0,
+			sizeof(glm::mat4),
+			(void*)&mvp);
 
 
+		VkBuffer vertexBuffers[] = { drawCalls[i].vBuffer };
+		VkDeviceSize vertexOffsets[] = { 0 };
+		vkCmdBindVertexBuffers(appData.commandBuffers[imageIndex], 0, 1, vertexBuffers, vertexOffsets);
+		vkCmdBindIndexBuffer(appData.commandBuffers[imageIndex], drawCalls[i].iBuffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(appData.commandBuffers[imageIndex], static_cast<uint32_t>(drawCalls[i].iCount), 1, 0, 0, 0);
 	}
 
 	vkCmdEndRenderPass(appData.commandBuffers[imageIndex]);

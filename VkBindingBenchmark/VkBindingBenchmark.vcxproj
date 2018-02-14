@@ -127,21 +127,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="file_utils.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mesh_loading.cpp" />
     <ClCompile Include="os_init.cpp" />
     <ClCompile Include="rendering.cpp" />
     <ClCompile Include="vkh.cpp" />
+    <ClCompile Include="vkh_material.cpp" />
     <ClCompile Include="vkh_mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Common.h" />
     <ClInclude Include="debug.h" />
     <ClInclude Include="file_utils.h" />
+    <ClInclude Include="material_loading.h" />
     <ClInclude Include="mesh_loading.h" />
     <ClInclude Include="os_init.h" />
     <ClInclude Include="os_input.h" />
     <ClInclude Include="rendering.h" />
+    <ClInclude Include="sampler_store.h" />
     <ClInclude Include="timing.h" />
     <ClInclude Include="vkh.h" />
     <ClInclude Include="vkh_alloc.h" />

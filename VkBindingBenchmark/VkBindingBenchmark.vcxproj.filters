@@ -45,6 +45,12 @@
     <ClCompile Include="os_init.cpp">
       <Filter>Source Files\os</Filter>
     </ClCompile>
+    <ClCompile Include="vkh_material.cpp">
+      <Filter>Source Files\vkh</Filter>
+    </ClCompile>
+    <ClCompile Include="file_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="debug.h">
@@ -94,6 +100,12 @@
     </ClInclude>
     <ClInclude Include="os_input.h">
       <Filter>Header Files\os</Filter>
+    </ClInclude>
+    <ClInclude Include="material_loading.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sampler_store.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

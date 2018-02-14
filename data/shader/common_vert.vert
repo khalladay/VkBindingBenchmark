@@ -1,14 +1,9 @@
 #version 450 core
 #extension GL_ARB_separate_shader_objects : enable
 
-layout(set = 0, binding = 0) uniform globalData
+layout(push_constant) uniform transformData
 {
-	mat4 view_projection;
-}global_data;
-
-layout(set = 1, binding = 0) uniform transformData
-{
-	mat4 model;
+	mat4 mvp;
 }transform_data;
 
 layout(location=0) in vec3 vertex;
@@ -23,6 +18,6 @@ out gl_PerVertex
 
 void main()
 {
-	gl_Position = vec4(vertex, 1.0) * transform_data.model * global_data.view_projection;
+	gl_Position =  transform_data.mvp * vec4(vertex, 1.0);
 	fragUV = uv;
 }

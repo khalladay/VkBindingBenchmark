@@ -5,7 +5,7 @@
 #include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
 
-static const int defaultFlags = aiProcess_OptimizeMeshes | aiProcess_JoinIdenticalVertices | aiProcess_FlipWindingOrder | aiProcess_Triangulate | aiProcess_CalcTangentSpace;
+static const int defaultFlags =  aiProcess_JoinIdenticalVertices| aiProcess_PreTransformVertices | aiProcess_FlipWindingOrder | aiProcess_Triangulate | aiProcess_CalcTangentSpace;
 
 void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMesh)
 {
@@ -27,13 +27,17 @@ void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMe
 
 	if (scene)
 	{
-		for (uint32_t mIdx = 0; mIdx < 1 /*scene->mNumMeshes*/; mIdx++)
+		uint32_t floatsPerVert = globalVertLayout->vertexSize / sizeof(float);
+		std::vector<float> vertexBuffer;
+		std::vector<uint32_t> indexBuffer;
+		uint32_t numVerts = 0;
+		uint32_t numFaces = 0;
+
+		for (uint32_t mIdx = 0; mIdx < scene->mNumMeshes; mIdx++)
 		{
 			const aiMesh* mesh = scene->mMeshes[mIdx];
-			
-			uint32_t floatsPerVert = globalVertLayout->vertexSize / sizeof(float);
-			std::vector<float> vertexBuffer;
-			std::vector<uint32_t> indexBuffer;
+			numVerts += mesh->mNumVertices;
+			numFaces += mesh->mNumFaces;
 
 			for (uint32_t vIdx = 0; vIdx < mesh->mNumVertices; ++vIdx)
 			{
@@ -108,10 +112,11 @@ void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMe
 				indexBuffer.push_back(face.mIndices[2]);
 			}
 
-			checkf(vertexBuffer.size() / floatsPerVert == mesh->mNumVertices, "Incorrect number of verts created for mesh");
+			//checkf(vertexBuffer.size() / floatsPerVert == mesh->mNumVertices, "Incorrect number of verts created for mesh");
 
-			vkh::Mesh::make(outMesh, ctxt, vertexBuffer.data(), mesh->mNumVertices, indexBuffer.data(), mesh->mNumFaces);
 		}
+		vkh::Mesh::make(outMesh, ctxt, vertexBuffer.data(), numVerts, indexBuffer.data(), numFaces);
+
 	}
 
 	aiDetachAllLogStreams();

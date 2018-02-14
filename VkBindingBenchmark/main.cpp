@@ -41,7 +41,7 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int
 
 	//load a test obj mesh
 	loadMesh("..\\data\\mesh\\f16.obj", appContext, testMesh);
-
+	//vkh::Mesh::quad(testMesh, appContext);
 	mainLoop();
 
 	return 0;
@@ -76,6 +76,6 @@ void mainLoop()
 			break;
 		}
 		
-		render(nullptr, 0);
+		render(&testMesh, 1);
 	}
 }
