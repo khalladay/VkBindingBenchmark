@@ -20,7 +20,7 @@ void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMe
 	stream = aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT, NULL);
 	aiAttachLogStream(&stream);
 
-	scene = aiImporter.ReadFile(filepath, defaultFlags);
+	scene = aiImporter.ReadFile(filepath, aiProcessPreset_TargetRealtime_MaxQuality);
 
 	const aiVector3D ZeroVector(0.0, 0.0, 0.0);
 	const aiColor4D ZeroColor(0.0, 0.0, 0.0, 0.0);
@@ -36,9 +36,6 @@ void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMe
 		for (uint32_t mIdx = 0; mIdx < scene->mNumMeshes; mIdx++)
 		{
 			const aiMesh* mesh = scene->mMeshes[mIdx];
-			numVerts += mesh->mNumVertices;
-			numFaces += mesh->mNumFaces;
-
 			for (uint32_t vIdx = 0; vIdx < mesh->mNumVertices; ++vIdx)
 			{
 				const aiVector3D* pos = &(mesh->mVertices[vIdx]);
@@ -51,9 +48,9 @@ void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMe
 
 				for (uint32_t lIdx = 0; lIdx < globalVertLayout->attrCount; ++lIdx)
 				{
-					const EMeshVertexAttribute* comp = &globalVertLayout->attributes[lIdx];
+					EMeshVertexAttribute comp = globalVertLayout->attributes[lIdx];
 
-					switch (*comp)
+					switch (comp)
 					{
 						case EMeshVertexAttribute::POSITION:
 						{
@@ -107,15 +104,18 @@ void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMe
 				const aiFace& face = mesh->mFaces[fIdx];
 				checkf(face.mNumIndices == 3, "unsupported number of indices in mesh face");
 
-				indexBuffer.push_back(face.mIndices[0]);
-				indexBuffer.push_back(face.mIndices[1]);
-				indexBuffer.push_back(face.mIndices[2]);
+				indexBuffer.push_back(numVerts + face.mIndices[0]);
+				indexBuffer.push_back(numVerts + face.mIndices[1]);
+				indexBuffer.push_back(numVerts + face.mIndices[2]);
 			}
 
-			//checkf(vertexBuffer.size() / floatsPerVert == mesh->mNumVertices, "Incorrect number of verts created for mesh");
+			numVerts += mesh->mNumVertices;
+			numFaces += mesh->mNumFaces;
+
+			checkf(vertexBuffer.size() / floatsPerVert == mesh->mNumVertices, "Incorrect number of verts created for mesh");
 
 		}
-		vkh::Mesh::make(outMesh, ctxt, vertexBuffer.data(), numVerts, indexBuffer.data(), numFaces);
+		vkh::Mesh::make(outMesh, ctxt, vertexBuffer.data(), numVerts, indexBuffer.data(), indexBuffer.size());
 
 	}
 

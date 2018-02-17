@@ -181,8 +181,9 @@ void render(vkh::MeshAsset* drawCalls, uint32_t count)
 			0.0f, 0.0f, 0.5f, 0.5f,
 			0.0f, 0.0f, 0.0f, 1.0f);
 
+		static float rads = 0.001f;
 		glm::mat4 vp = vulkanCorrection * p * view;
-		glm::mat4 mvp = vp *(glm::translate(glm::vec3(0.0f, 0.0f, 5.0f)) * glm::rotate(glm::radians(45.0f), glm::vec3(1,1,1)) * glm::scale(glm::vec3(3.0f, 3.0f, 3.0f)));
+		glm::mat4 mvp = vp *(glm::translate(glm::vec3(0.0f, 0.0f, 5.0f)) * glm::rotate(glm::radians(rads += 0.1f), glm::vec3(1,1,1)) * glm::scale(glm::vec3(3.0f, 3.0f, 3.0f)));
 
 		vkCmdPushConstants(
 			appData.commandBuffers[imageIndex],
