@@ -77,10 +77,11 @@ void mainLoop()
 		Camera::rotate(worldCamera, glm::vec3(0.0f, 1.0f, 0.0f), -OS::getMouseDX() * 0.01f);
 		Camera::rotate(worldCamera, Camera::localRight(worldCamera), OS::getMouseDY() * 0.01f);
 
-		if (OS::getKey(KeyCode::KEY_W))
-		{
-			Camera::translate(worldCamera, Camera::localForward(worldCamera) * 0.01f);
-		}
+		float leftRight = OS::getKey(KeyCode::KEY_A) ? 1.0f : (OS::getKey(KeyCode::KEY_D) ? -1.0f : 0.0f);
+		float forwardBack = OS::getKey(KeyCode::KEY_W) ? 1.0f : (OS::getKey(KeyCode::KEY_S) ? -1.0f : 0.0f);
+
+		glm::vec3 translation = (Camera::localForward(worldCamera) * forwardBack) + (Camera::localRight(worldCamera) * leftRight);
+		Camera::translate(worldCamera, translation * 0.01f);
 
 		if (OS::getKey(KEY_ESCAPE))
 		{
