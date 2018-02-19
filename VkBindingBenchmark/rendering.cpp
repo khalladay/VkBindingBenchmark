@@ -121,7 +121,7 @@ void createMainRenderPass(vkh::VkhContext& ctxt)
 }
 
 
-void render(vkh::MeshAsset* drawCalls, uint32_t count)
+void render(Camera::Cam& cam, vkh::MeshAsset* drawCalls, uint32_t count)
 {
 	//acquire an image from the swap chain
 	uint32_t imageIndex;
@@ -168,7 +168,7 @@ void render(vkh::MeshAsset* drawCalls, uint32_t count)
 	{
 		const glm::vec3 center(0.0f);
 		const glm::vec3 up(0.f, 1.0f, 0.0f);
-		const glm::mat4 view = glm::lookAt(glm::vec3(0.0f, 0.0f, -1.0f), center, up);
+		const glm::mat4 view = Camera::viewMatrix(cam);
 
 		vkCmdBindPipeline(appData.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, uvMaterial.graphicsPipeline);
 		glm::mat4 p = glm::perspective(glm::radians(60.0f), 800.0f/600.0f, -1.0f, 256.0f);
@@ -183,7 +183,7 @@ void render(vkh::MeshAsset* drawCalls, uint32_t count)
 
 		static float rads = 0.001f;
 		glm::mat4 vp = vulkanCorrection * p * view;
-		glm::mat4 mvp = vp *(glm::translate(glm::vec3(0.0f, 0.0f, 5.0f)) * glm::rotate(glm::radians(rads += 0.1f), glm::vec3(1,1,1)) * glm::scale(glm::vec3(3.0f, 3.0f, 3.0f)));
+		glm::mat4 mvp = vp *(glm::translate(glm::vec3(0.0f, 0.0f, 5.0f)) * glm::scale(glm::vec3(1.f, 1.f, 1.f)));
 
 		vkCmdPushConstants(
 			appData.commandBuffers[imageIndex],

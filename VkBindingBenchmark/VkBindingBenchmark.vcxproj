@@ -127,6 +127,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="file_utils.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mesh_loading.cpp" />
@@ -137,6 +138,7 @@
     <ClCompile Include="vkh_mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="camera.h" />
     <ClInclude Include="Common.h" />
     <ClInclude Include="debug.h" />
     <ClInclude Include="file_utils.h" />

@@ -150,8 +150,11 @@ namespace OS
 		result = GInputState.diMouse->SetDataFormat(&c_dfDIMouse);
 		checkhf(result, "Failed to set data format for DirectInput mouse");
 
-		//result = GInputState.diMouse->SetCooperativeLevel(wndHdl, DISCL_FOREGROUND | DISCL_EXCLUSIVE);
+		//result = GInputState.diMouse->SetCooperativeLevel(GAppInfo.wndHdl, DISCL_FOREGROUND | DISCL_EXCLUSIVE);
 		//checkhf(result, "Failed to get exclusive access to DirectInput mouse");
+
+
+
 
 		// Acquire the mouse.
 		result = GInputState.diMouse->Acquire();

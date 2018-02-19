@@ -1,6 +1,7 @@
 #include "Common.h"
 #include "mesh_loading.h"
 #include "rendering.h"
+#include "camera.h"
 /*
 	Single threaded. Try to keep as much equal as possible, save for the experimental changes
 	Test - binding once with uniform buffers, binding once with ssbo, binding per object uniform data
@@ -13,6 +14,7 @@
 
 vkh::VkhContext appContext;
 vkh::MeshAsset testMesh;
+Camera::Cam worldCamera;
 
 void mainLoop();
 
@@ -40,7 +42,7 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int
 	initRendering(appContext);
 
 	//load a test obj mesh
-	loadMesh("..\\data\\mesh\\f16.obj", appContext, testMesh);
+	loadMesh("..\\data\\mesh\\cube.obj", appContext, testMesh);
 	//vkh::Mesh::quad(testMesh, appContext);
 	mainLoop();
 
@@ -62,6 +64,8 @@ void mainLoop()
 
 	startTimingFrame(fpsData);
 
+	Camera::init(worldCamera);
+
 	while (running)
 	{
 		double dt = endTimingFrame(fpsData);
@@ -70,12 +74,20 @@ void mainLoop()
 		OS::handleEvents();
 		OS::pollInput();
 
+		Camera::rotate(worldCamera, glm::vec3(0.0f, 1.0f, 0.0f), -OS::getMouseDX() * 0.01f);
+		Camera::rotate(worldCamera, Camera::localRight(worldCamera), OS::getMouseDY() * 0.01f);
+
+		if (OS::getKey(KeyCode::KEY_W))
+		{
+			Camera::translate(worldCamera, Camera::localForward(worldCamera) * 0.01f);
+		}
+
 		if (OS::getKey(KEY_ESCAPE))
 		{
 			running = false;
 			break;
 		}
 		
-		render(&testMesh, 1);
+		render(worldCamera, &testMesh, 1);
 	}
 }

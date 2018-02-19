@@ -20,7 +20,7 @@ void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMe
 	stream = aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT, NULL);
 	aiAttachLogStream(&stream);
 
-	scene = aiImporter.ReadFile(filepath, aiProcessPreset_TargetRealtime_MaxQuality);
+	scene = aiImporter.ReadFile(filepath, aiProcess_Triangulate);
 
 	const aiVector3D ZeroVector(0.0, 0.0, 0.0);
 	const aiColor4D ZeroColor(0.0, 0.0, 0.0, 0.0);
@@ -112,7 +112,7 @@ void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMe
 			numVerts += mesh->mNumVertices;
 			numFaces += mesh->mNumFaces;
 
-			checkf(vertexBuffer.size() / floatsPerVert == mesh->mNumVertices, "Incorrect number of verts created for mesh");
+		//	checkf(vertexBuffer.size() / floatsPerVert == mesh->mNumVertices, "Incorrect number of verts created for mesh");
 
 		}
 		vkh::Mesh::make(outMesh, ctxt, vertexBuffer.data(), numVerts, indexBuffer.data(), indexBuffer.size());
