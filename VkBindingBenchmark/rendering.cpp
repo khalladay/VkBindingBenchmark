@@ -1,8 +1,9 @@
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
 #include "rendering.h"
 #include "os_init.h"
 #include "vkh_material.h"
-#define GLM_FORCE_RADIANS
-//#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include <glm/gtx/transform.hpp>
 
@@ -70,11 +71,11 @@ void createDepthBuffer()
 	vkh::VkhContext& ctxt = *appData.owningContext;
 
 	vkh::createImage(appData.depthBuffer.handle, 
-					OS::GAppInfo.curW, 
-					OS::GAppInfo.curH, 
+					ctxt.swapChain.extent.width, 
+					ctxt.swapChain.extent.height, 
 					VK_FORMAT_D32_SFLOAT, 
 					VK_IMAGE_TILING_OPTIMAL, 
-					VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
+					VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
 					*appData.owningContext);
 
 	VkMemoryRequirements memRequirements;
@@ -88,6 +89,8 @@ void createDepthBuffer()
 	vkh::allocateDeviceMemory(appData.depthBuffer.imageMemory, createInfo, ctxt);
 	vkBindImageMemory(ctxt.device, appData.depthBuffer.handle, appData.depthBuffer.imageMemory.handle, appData.depthBuffer.imageMemory.offset);
 	vkh::createImageView(appData.depthBuffer.view, VK_FORMAT_D32_SFLOAT, VK_IMAGE_ASPECT_DEPTH_BIT, 1, appData.depthBuffer.handle, ctxt.device);
+
+	vkh::transitionImageLayout(appData.depthBuffer.handle, VK_FORMAT_D32_SFLOAT, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, ctxt);
 }
 
 void createMainRenderPass(vkh::VkhContext& ctxt)
@@ -150,15 +153,12 @@ void render(Camera::Cam& cam, vkh::MeshAsset* drawCalls, uint32_t count)
 	renderPassInfo.renderArea.offset = { 0, 0 };
 	renderPassInfo.renderArea.extent = appContext.swapChain.extent;
 
-	std::vector<VkClearValue> clearColors;
+	VkClearValue clearColors[2];
+	clearColors[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+	clearColors[1].depthStencil.depth = 1.0f;
+	clearColors[1].depthStencil.stencil = 0;
 
-	//color
-	clearColors.push_back({ 0.0f, 0.0f, 0.0f, 1.0f });
-
-	//depth
-	clearColors.push_back({ 1.0f, 1.0f, 1.0f, 1.0f });
-
-	renderPassInfo.clearValueCount = static_cast<uint32_t>(clearColors.size());
+	renderPassInfo.clearValueCount = static_cast<uint32_t>(2);
 	renderPassInfo.pClearValues = &clearColors[0];
 
 	vkCmdBeginRenderPass(appData.commandBuffers[imageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -171,18 +171,18 @@ void render(Camera::Cam& cam, vkh::MeshAsset* drawCalls, uint32_t count)
 		const glm::mat4 view = Camera::viewMatrix(cam);
 
 		vkCmdBindPipeline(appData.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, uvMaterial.graphicsPipeline);
-		glm::mat4 p = glm::perspective(glm::radians(60.0f), 800.0f/600.0f, -1.0f, 256.0f);
-
+		glm::mat4 p = glm::perspectiveRH(glm::radians(60.0f), 800.0f/600.0f, 0.0f, 1.0f);
 		//from https://matthewwellings.com/blog/the-new-vulkan-coordinate-system/
 		//this flips the y coordinate back to positive == up, and readjusts depth range to match opengl
 		glm::mat4 vulkanCorrection = glm::mat4(
 			1.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, -1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 0.5f, 0.5f,
-			0.0f, 0.0f, 0.0f, 1.0f);
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 0.5f, 0.0f,
+			0.0f, 0.0f, 0.0f, 0.5f);
 
 		static float rads = 0.001f;
-		glm::mat4 vp = vulkanCorrection * p * view;
+		p[1][1] *= -1;
+		glm::mat4 vp = p * view;
 		glm::mat4 mvp = vp *(glm::translate(glm::vec3(0.0f, 0.0f, 5.0f)) * glm::scale(glm::vec3(1.f, 1.f, 1.f)));
 
 		vkCmdPushConstants(

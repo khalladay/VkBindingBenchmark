@@ -20,7 +20,7 @@ void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMe
 	stream = aiGetPredefinedLogStream(aiDefaultLogStream_STDOUT, NULL);
 	aiAttachLogStream(&stream);
 
-	scene = aiImporter.ReadFile(filepath, aiProcess_Triangulate);
+	scene = aiImporter.ReadFile(filepath, defaultFlags);
 
 	const aiVector3D ZeroVector(0.0, 0.0, 0.0);
 	const aiColor4D ZeroColor(0.0, 0.0, 0.0, 0.0);
@@ -33,7 +33,7 @@ void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMe
 		uint32_t numVerts = 0;
 		uint32_t numFaces = 0;
 
-		for (uint32_t mIdx = 0; mIdx < scene->mNumMeshes; mIdx++)
+		for (uint32_t mIdx = 2; mIdx < 3; mIdx++)
 		{
 			const aiMesh* mesh = scene->mMeshes[mIdx];
 			for (uint32_t vIdx = 0; vIdx < mesh->mNumVertices; ++vIdx)
