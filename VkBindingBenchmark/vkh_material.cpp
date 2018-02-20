@@ -38,7 +38,7 @@ namespace vkh
 		vertexInputInfo.pVertexAttributeDescriptions = &vertexLayout->attrDescriptions[0];
 
 		VkPipelineInputAssemblyStateCreateInfo inputAssembly = vkh::pipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST, VK_FALSE);
-		VkViewport viewport = vkh::viewport(0, 0, static_cast<float>(ctxt.swapChain.extent.width), static_cast<float>(ctxt.swapChain.extent.height));
+		VkViewport viewport = vkh::viewport(0, 0, static_cast<float>(ctxt.swapChain.extent.width), static_cast<float>(ctxt.swapChain.extent.height),0.0f, 1.0f);
 		VkRect2D scissor = vkh::rect2D(0, 0, ctxt.swapChain.extent.width, ctxt.swapChain.extent.height);
 		VkPipelineViewportStateCreateInfo viewportState = vkh::pipelineViewportStateCreateInfo(&viewport, 1, &scissor, 1);
 

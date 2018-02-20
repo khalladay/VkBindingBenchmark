@@ -11,10 +11,6 @@ layout(location=1) in vec2 uv;
 
 layout(location=0) out vec2 fragUV;
 
-out gl_PerVertex
-{
-	vec4 gl_Position;
-};
 
 void main()
 {
