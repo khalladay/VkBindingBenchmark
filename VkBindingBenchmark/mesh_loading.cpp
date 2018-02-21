@@ -33,7 +33,7 @@ void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMe
 		uint32_t numVerts = 0;
 		uint32_t numFaces = 0;
 
-		for (uint32_t mIdx = 2; mIdx < 3; mIdx++)
+		for (uint32_t mIdx = 0; mIdx < scene->mNumMeshes; mIdx++)
 		{
 			const aiMesh* mesh = scene->mMeshes[mIdx];
 			for (uint32_t vIdx = 0; vIdx < mesh->mNumVertices; ++vIdx)

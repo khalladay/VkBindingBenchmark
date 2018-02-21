@@ -171,19 +171,19 @@ void render(Camera::Cam& cam, vkh::MeshAsset* drawCalls, uint32_t count)
 		const glm::mat4 view = Camera::viewMatrix(cam);
 
 		vkCmdBindPipeline(appData.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, uvMaterial.graphicsPipeline);
-		glm::mat4 p = glm::perspectiveRH(glm::radians(60.0f), 800.0f/600.0f, 0.01f, 100.0f);
+		glm::mat4 p = glm::perspectiveRH(glm::radians(60.0f), 800.0f/600.0f, 0.01f, 1000.0f);
 		//from https://matthewwellings.com/blog/the-new-vulkan-coordinate-system/
 		//this flips the y coordinate back to positive == up, and readjusts depth range to match opengl
 		glm::mat4 vulkanCorrection = glm::mat4(
 			1.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, -1.0f, 0.0f, 0.0f,
 			0.0f, 0.0f, 0.5f, 0.0f,
 			0.0f, 0.0f, 0.5f, 1.0f);
 
 		static float rads = 0.001f;
 		p[1][1] *= -1;
 		glm::mat4 vp = vulkanCorrection * p * view;
-		glm::mat4 mvp = vp;// *(glm::translate(glm::vec3(0.0f, 0.0f, 5.0f)) * glm::scale(glm::vec3(1.f, 1.f, 1.f)));
+		glm::mat4 mvp = vp *(glm::translate(glm::vec3(0.0f, 0.0f, 5.0f)) * glm::scale(glm::vec3(1.f, 1.f, 1.f)));
 
 		vkCmdPushConstants(
 			appData.commandBuffers[imageIndex],
