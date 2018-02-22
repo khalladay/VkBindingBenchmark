@@ -5,9 +5,9 @@
 #include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
 
-static const int defaultFlags =  aiProcess_JoinIdenticalVertices| aiProcess_PreTransformVertices | aiProcess_FlipWindingOrder | aiProcess_Triangulate | aiProcess_CalcTangentSpace;
+static const int defaultFlags =  aiProcess_JoinIdenticalVertices | aiProcess_FlipWindingOrder | aiProcess_Triangulate;
 
-void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMesh)
+void loadMesh(const char* filepath, bool combineSubMeshes, vkh::VkhContext& ctxt, vkh::MeshAsset& outMesh)
 {
 	using namespace vkh;
 
@@ -112,9 +112,8 @@ void loadMesh(const char* filepath, vkh::VkhContext& ctxt, vkh::MeshAsset& outMe
 			numVerts += mesh->mNumVertices;
 			numFaces += mesh->mNumFaces;
 
-		//	checkf(vertexBuffer.size() / floatsPerVert == mesh->mNumVertices, "Incorrect number of verts created for mesh");
-
 		}
+
 		vkh::Mesh::make(outMesh, ctxt, vertexBuffer.data(), numVerts, indexBuffer.data(), indexBuffer.size());
 
 	}

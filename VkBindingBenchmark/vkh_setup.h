@@ -588,7 +588,7 @@ namespace vkh
 		createPhysicalDevice(ctxt);
 		createLogicalDevice(ctxt);
 
-		vkh::allocators::passthrough::activate(&ctxt);
+		vkh::allocators::pool::activate(&ctxt);
 
 		createSwapchainForSurface(ctxt);
 		createCommandPool(ctxt.gfxCommandPool, ctxt.device, ctxt.gpu, ctxt.gpu.graphicsQueueFamilyIdx);

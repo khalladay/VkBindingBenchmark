@@ -29,11 +29,11 @@ namespace vkh
 
 	struct MeshAsset
 	{
-		VkBuffer vBuffer;
-		VkBuffer iBuffer;
+		VkBuffer buffer;
+		Allocation bufferMemory;
 
-		Allocation vBufferMemory;
-		Allocation iBufferMemory;
+		uint32_t vOffset;
+		uint32_t iOffset;
 
 		uint32_t vCount;
 		uint32_t iCount;
@@ -48,6 +48,7 @@ namespace vkh::Mesh
 	void setGlobalVertexLayout(std::vector<EMeshVertexAttribute> layout);
 
 	const VertexRenderData* vertexRenderData();
-	void make(MeshAsset& outAsset, VkhContext& ctxt, float* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount);
+
+	uint32_t make(MeshAsset& outAsset, VkhContext& ctxt, float* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount);
 	void quad(MeshAsset& outAsset, VkhContext& ctxt, float width = 2.0f, float height = 2.0f, float xOffset = 0.0f, float yOffset = 0.0f);
 }

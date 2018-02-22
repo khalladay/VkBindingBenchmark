@@ -54,7 +54,7 @@ namespace vkh::Mesh
 		return _vkRenderData;
 	}
 
-	void make(MeshAsset& outAsset, VkhContext& ctxt, float* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount)
+	uint32_t make(MeshAsset& outAsset, VkhContext& ctxt, float* vertices, uint32_t vertexCount, uint32_t* indices, uint32_t indexCount)
 	{
 		size_t vBufferSize = vertexRenderData()->vertexSize * vertexCount;
 		size_t iBufferSize = sizeof(uint32_t) * indexCount;
@@ -63,18 +63,10 @@ namespace vkh::Mesh
 		m.iCount = indexCount;
 		m.vCount = vertexCount;
 
-		createBuffer(m.vBuffer,
-			m.vBufferMemory,
-			vBufferSize,
-			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			ctxt
-		);
-
-		createBuffer(m.iBuffer,
-			m.iBufferMemory,
-			iBufferSize,
-			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+		createBuffer(m.buffer,
+			m.bufferMemory,
+			vBufferSize + iBufferSize,
+			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
 			ctxt
 		);
@@ -85,37 +77,31 @@ namespace vkh::Mesh
 
 		createBuffer(stagingBuffer,
 			stagingMemory,
-			vBufferSize,
+			vBufferSize + iBufferSize,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
 			ctxt
 		);
 
 		void* data;
+		
 		vkMapMemory(ctxt.device, stagingMemory.handle, stagingMemory.offset, vBufferSize, 0, &data);
 		memcpy(data, vertices, (size_t)vBufferSize);
 		vkUnmapMemory(ctxt.device, stagingMemory.handle);
-
-		//copy to device local here
-		copyBuffer(stagingBuffer, m.vBuffer, vBufferSize, 0, 0, ctxt);
-		freeDeviceMemory(stagingMemory);
-		vkDestroyBuffer(ctxt.device, stagingBuffer, nullptr);
-
-		createBuffer(stagingBuffer,
-			stagingMemory,
-			iBufferSize,
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			ctxt
-		);
-
-		vkMapMemory(ctxt.device, stagingMemory.handle, stagingMemory.offset, iBufferSize, 0, &data);
+		
+		vkMapMemory(ctxt.device, stagingMemory.handle, stagingMemory.offset + vBufferSize, vBufferSize, 0, &data);
 		memcpy(data, indices, (size_t)iBufferSize);
 		vkUnmapMemory(ctxt.device, stagingMemory.handle);
 
-		copyBuffer(stagingBuffer, m.iBuffer, iBufferSize, 0, 0, ctxt);
+		//copy to device local here
+		copyBuffer(stagingBuffer, m.buffer, vBufferSize+iBufferSize, 0, 0, ctxt);
 		freeDeviceMemory(stagingMemory);
 		vkDestroyBuffer(ctxt.device, stagingBuffer, nullptr);
+
+		m.vOffset = 0;
+		m.iOffset = vBufferSize;
+
+		return 0;
 
 	}
 
