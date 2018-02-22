@@ -11,4 +11,4 @@ struct DrawCall
 };
 
 void initRendering(vkh::VkhContext& context);
-void render(Camera::Cam& camera, vkh::MeshAsset* drawCalls, uint32_t count);
+void render(Camera::Cam& camera, const std::vector<vkh::MeshAsset>& drawCalls);

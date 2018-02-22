@@ -13,7 +13,7 @@
 */
 
 vkh::VkhContext appContext;
-vkh::MeshAsset testMesh;
+std::vector<vkh::MeshAsset> testMesh;
 Camera::Cam worldCamera;
 
 void mainLoop();
@@ -42,7 +42,7 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int
 	initRendering(appContext);
 
 	//load a test obj mesh
-	loadMesh("..\\data\\mesh\\spider.obj", true, appContext, testMesh);
+	testMesh = loadMesh("..\\data\\mesh\\spider.obj", false, appContext);
 	//vkh::Mesh::quad(testMesh, appContext);
 	mainLoop();
 
@@ -89,6 +89,6 @@ void mainLoop()
 			break;
 		}
 		
-		render(worldCamera, &testMesh, 1);
+		render(worldCamera, testMesh);
 	}
 }

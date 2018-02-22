@@ -7,9 +7,10 @@
 
 static const int defaultFlags =  aiProcess_JoinIdenticalVertices | aiProcess_FlipWindingOrder | aiProcess_Triangulate;
 
-void loadMesh(const char* filepath, bool combineSubMeshes, vkh::VkhContext& ctxt, vkh::MeshAsset& outMesh)
+std::vector<vkh::MeshAsset> loadMesh(const char* filepath, bool combineSubMeshes, vkh::VkhContext& ctxt)
 {
 	using namespace vkh;
+	std::vector<MeshAsset> outMeshes;
 
 	const VertexRenderData* globalVertLayout = Mesh::vertexRenderData();
 
@@ -33,8 +34,18 @@ void loadMesh(const char* filepath, bool combineSubMeshes, vkh::VkhContext& ctxt
 		uint32_t numVerts = 0;
 		uint32_t numFaces = 0;
 
+		outMeshes.resize(combineSubMeshes ? 1 : scene->mNumMeshes);
+
 		for (uint32_t mIdx = 0; mIdx < scene->mNumMeshes; mIdx++)
 		{
+			if (!combineSubMeshes)
+			{
+				vertexBuffer.clear();
+				indexBuffer.clear();
+				numVerts = 0;
+				numFaces = 0;
+			}
+
 			const aiMesh* mesh = scene->mMeshes[mIdx];
 			for (uint32_t vIdx = 0; vIdx < mesh->mNumVertices; ++vIdx)
 			{
@@ -112,11 +123,19 @@ void loadMesh(const char* filepath, bool combineSubMeshes, vkh::VkhContext& ctxt
 			numVerts += mesh->mNumVertices;
 			numFaces += mesh->mNumFaces;
 
+			if (!combineSubMeshes)
+			{
+				vkh::Mesh::make(outMeshes[mIdx], ctxt, vertexBuffer.data(), numVerts, indexBuffer.data(), indexBuffer.size());
+			}
 		}
 
-		vkh::Mesh::make(outMesh, ctxt, vertexBuffer.data(), numVerts, indexBuffer.data(), indexBuffer.size());
-
+		if (combineSubMeshes)
+		{
+			vkh::Mesh::make(outMeshes[0], ctxt, vertexBuffer.data(), numVerts, indexBuffer.data(), indexBuffer.size());
+		}
 	}
 
 	aiDetachAllLogStreams();
+
+	return outMeshes;
 }

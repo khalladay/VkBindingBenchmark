@@ -124,7 +124,7 @@ void createMainRenderPass(vkh::VkhContext& ctxt)
 }
 
 
-void render(Camera::Cam& cam, vkh::MeshAsset* drawCalls, uint32_t count)
+void render(Camera::Cam& cam, const std::vector<vkh::MeshAsset>& drawCalls)
 {
 	//acquire an image from the swap chain
 	uint32_t imageIndex;
@@ -164,7 +164,7 @@ void render(Camera::Cam& cam, vkh::MeshAsset* drawCalls, uint32_t count)
 	vkCmdBeginRenderPass(appData.commandBuffers[imageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 
-	for (uint32_t i = 0; i < count; ++i)
+	for (uint32_t i = 0; i < drawCalls.size(); ++i)
 	{
 		const glm::vec3 center(0.0f);
 		const glm::vec3 up(0.f, 1.0f, 0.0f);
