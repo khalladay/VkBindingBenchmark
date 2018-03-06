@@ -1,7 +1,42 @@
 #include "vkh_material.h"
+#include "config.h"
 
 namespace vkh
 {
+	GlobalShaderDataStore globalData;
+
+	void initGlobalShaderData(VkhContext& ctxt)
+	{
+		static bool isInitialized = false;
+		if (!isInitialized)
+		{
+
+			uint32_t structSize = static_cast<uint32_t>(sizeof(GlobalShaderData));
+			size_t uboAlignment = ctxt.gpu.deviceProps.limits.minUniformBufferOffsetAlignment;
+		
+			globalData.size = (structSize / uboAlignment) * uboAlignment + ((structSize % uboAlignment) > 0 ? uboAlignment : 0);
+
+			vkh::createBuffer(
+				globalData.buffer,
+				globalData.mem,
+				globalData.size,
+				VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+				VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+				ctxt);
+
+			vkMapMemory(ctxt.device, globalData.mem.handle, globalData.mem.offset, globalData.size, 0, &globalData.mappedMemory);			
+			
+			VkSamplerCreateInfo createInfo = vkh::samplerCreateInfo(VK_FILTER_LINEAR, VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_SAMPLER_MIPMAP_MODE_LINEAR, 0.0f);
+			VkResult res = vkCreateSampler(ctxt.device, &createInfo, 0, &globalData.sampler);
+			
+			
+			checkf(res == VK_SUCCESS, "Error creating global sampler");
+
+			isInitialized = true;
+
+		}
+	}
+
 	void createBasicMaterial(const char* vShaderPath, const char* fShaderPath, VkhContext& ctxt, VkhMaterialCreateInfo& createInfo)
 	{
 		VkPipelineShaderStageCreateInfo shaderStages[2];
@@ -76,7 +111,7 @@ namespace vkh
 
 		res = vkCreateGraphicsPipelines(ctxt.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, createInfo.outPipeline);
 		checkf(res == VK_SUCCESS, "Error creating graphics pipeline");
-
+		
 		freeDataBuffer(vShaderData);
 		freeDataBuffer(fShaderData);
 	}

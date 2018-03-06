@@ -89,7 +89,7 @@ namespace vkh::Mesh
 		memcpy(data, vertices, (size_t)vBufferSize);
 		vkUnmapMemory(ctxt.device, stagingMemory.handle);
 		
-		vkMapMemory(ctxt.device, stagingMemory.handle, stagingMemory.offset + vBufferSize, vBufferSize, 0, &data);
+		vkMapMemory(ctxt.device, stagingMemory.handle, stagingMemory.offset + vBufferSize, iBufferSize, 0, &data);
 		memcpy(data, indices, (size_t)iBufferSize);
 		vkUnmapMemory(ctxt.device, stagingMemory.handle);
 

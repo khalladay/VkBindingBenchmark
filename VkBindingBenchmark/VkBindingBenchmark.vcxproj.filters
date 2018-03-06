@@ -54,6 +54,9 @@
     <ClCompile Include="camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ubo_store.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="debug.h">
@@ -107,11 +110,14 @@
     <ClInclude Include="material_loading.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sampler_store.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="camera.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ubo_store.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -119,6 +125,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\data\shader\debug_uvs.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\data\shader\ubo_array.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\data\shader\debug_normals.frag">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

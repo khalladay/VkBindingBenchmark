@@ -5,13 +5,13 @@
 #include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
 
-static const int defaultFlags =  aiProcess_JoinIdenticalVertices | aiProcess_FlipWindingOrder | aiProcess_Triangulate;
+static const int defaultFlags =  aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices | aiProcess_FlipWindingOrder | aiProcess_Triangulate;
 
 std::vector<vkh::MeshAsset> loadMesh(const char* filepath, bool combineSubMeshes, vkh::VkhContext& ctxt)
 {
 	using namespace vkh;
 	std::vector<MeshAsset> outMeshes;
-
+	
 	const VertexRenderData* globalVertLayout = Mesh::vertexRenderData();
 
 	Assimp::Importer aiImporter;
@@ -47,8 +47,10 @@ std::vector<vkh::MeshAsset> loadMesh(const char* filepath, bool combineSubMeshes
 			}
 
 			const aiMesh* mesh = scene->mMeshes[mIdx];
+			
 			for (uint32_t vIdx = 0; vIdx < mesh->mNumVertices; ++vIdx)
 			{
+				
 				const aiVector3D* pos = &(mesh->mVertices[vIdx]);
 				const aiVector3D* nrm = &(mesh->mNormals[vIdx]);
 				const aiVector3D* uv0 = mesh->HasTextureCoords(0) ? &(mesh->mTextureCoords[0][vIdx]) : &ZeroVector;

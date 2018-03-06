@@ -133,6 +133,7 @@
     <ClCompile Include="mesh_loading.cpp" />
     <ClCompile Include="os_init.cpp" />
     <ClCompile Include="rendering.cpp" />
+    <ClCompile Include="ubo_store.cpp" />
     <ClCompile Include="vkh.cpp" />
     <ClCompile Include="vkh_material.cpp" />
     <ClCompile Include="vkh_mesh.cpp" />
@@ -140,6 +141,7 @@
   <ItemGroup>
     <ClInclude Include="camera.h" />
     <ClInclude Include="Common.h" />
+    <ClInclude Include="config.h" />
     <ClInclude Include="debug.h" />
     <ClInclude Include="file_utils.h" />
     <ClInclude Include="material_loading.h" />
@@ -147,8 +149,8 @@
     <ClInclude Include="os_init.h" />
     <ClInclude Include="os_input.h" />
     <ClInclude Include="rendering.h" />
-    <ClInclude Include="sampler_store.h" />
     <ClInclude Include="timing.h" />
+    <ClInclude Include="ubo_store.h" />
     <ClInclude Include="vkh.h" />
     <ClInclude Include="vkh_alloc.h" />
     <ClInclude Include="vkh_initializers.h" />
@@ -160,7 +162,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\data\shader\common_vert.vert" />
+    <None Include="..\data\shader\debug_normals.frag" />
     <None Include="..\data\shader\debug_uvs.frag" />
+    <None Include="..\data\shader\ubo_array.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

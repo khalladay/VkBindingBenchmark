@@ -570,7 +570,6 @@ namespace vkh
 		}
 		else bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-
 		bufferInfo.pQueueFamilyIndices = &queues[0];
 		bufferInfo.queueFamilyIndexCount = static_cast<uint32_t>(queues.size());
 

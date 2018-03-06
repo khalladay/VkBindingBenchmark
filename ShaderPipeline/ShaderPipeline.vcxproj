@@ -70,9 +70,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>..\build</OutDir>
-    <IntDir>..\build\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>..\build\$(Platform)\$(ProjectName)\$(Configuration)\</IntDir>
     <IncludePath>..\external\argh;..\external\spirv_cross;..\external;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
-    <LibraryPath>..\external\spirv_cross\lib-release;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
+    <LibraryPath>..\external\spirv_cross\lib_release;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(NETFXKitsDir)Lib\um\x64</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>..\external\argh;..\external\spirv_cross;..\external;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>

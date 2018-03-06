@@ -2,6 +2,8 @@
 #include "mesh_loading.h"
 #include "rendering.h"
 #include "camera.h"
+#include "ubo_store.h"
+#include "vkh.h"
 /*
 	Single threaded. Try to keep as much equal as possible, save for the experimental changes
 	Test - binding once with uniform buffers, binding once with ssbo, binding per object uniform data
@@ -13,7 +15,10 @@
 */
 
 vkh::VkhContext appContext;
+
 std::vector<vkh::MeshAsset> testMesh;
+std::vector<uint32_t> uboIdx;
+
 Camera::Cam worldCamera;
 
 void mainLoop();
@@ -37,13 +42,23 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int
 	std::vector<vkh::EMeshVertexAttribute> meshLayout;
 	meshLayout.push_back(vkh::EMeshVertexAttribute::POSITION);
 	meshLayout.push_back(vkh::EMeshVertexAttribute::UV0);
+	meshLayout.push_back(vkh::EMeshVertexAttribute::NORMAL);
 	vkh::Mesh::setGlobalVertexLayout(meshLayout);
 
-	initRendering(appContext);
-
 	//load a test obj mesh
-	testMesh = loadMesh("..\\data\\mesh\\spider.obj", false, appContext);
-	//vkh::Mesh::quad(testMesh, appContext);
+	
+	testMesh = loadMesh("..\\data\\mesh\\sponza.obj", false, appContext);
+	uboIdx.resize(testMesh.size());
+	initRendering(appContext, testMesh.size());
+
+	ubo_store::init(testMesh.size(), appContext);
+	
+	for (uint32_t i = 0; i < testMesh.size(); ++i)
+	{
+		bool didAcquire = ubo_store::acquire(uboIdx[i]);
+		checkf(didAcquire, "Error acquiring ubo index");
+	}
+
 	mainLoop();
 
 	return 0;
@@ -89,6 +104,6 @@ void mainLoop()
 			break;
 		}
 		
-		render(worldCamera, testMesh);
+		render(worldCamera, testMesh,uboIdx);
 	}
 }
