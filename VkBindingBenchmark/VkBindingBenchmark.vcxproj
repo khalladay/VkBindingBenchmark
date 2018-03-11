@@ -131,8 +131,10 @@
     <ClCompile Include="file_utils.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mesh_loading.cpp" />
+    <ClCompile Include="null_store.cpp" />
     <ClCompile Include="os_init.cpp" />
     <ClCompile Include="rendering.cpp" />
+    <ClCompile Include="ssbo_store.cpp" />
     <ClCompile Include="ubo_store.cpp" />
     <ClCompile Include="vkh.cpp" />
     <ClCompile Include="vkh_material.cpp" />
@@ -146,9 +148,12 @@
     <ClInclude Include="file_utils.h" />
     <ClInclude Include="material_loading.h" />
     <ClInclude Include="mesh_loading.h" />
+    <ClInclude Include="null_store.h" />
     <ClInclude Include="os_init.h" />
     <ClInclude Include="os_input.h" />
     <ClInclude Include="rendering.h" />
+    <ClInclude Include="shader_inputs.h" />
+    <ClInclude Include="ssbo_store.h" />
     <ClInclude Include="timing.h" />
     <ClInclude Include="ubo_store.h" />
     <ClInclude Include="vkh.h" />
@@ -164,6 +169,7 @@
     <None Include="..\data\shader\common_vert.vert" />
     <None Include="..\data\shader\debug_normals.frag" />
     <None Include="..\data\shader\debug_uvs.frag" />
+    <None Include="..\data\shader\ssbo_array.vert" />
     <None Include="..\data\shader\ubo_array.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

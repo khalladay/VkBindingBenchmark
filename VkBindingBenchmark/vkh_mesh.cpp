@@ -75,7 +75,7 @@ namespace vkh::Mesh
 		VkBuffer stagingBuffer;
 		Allocation stagingMemory;
 
-		createBuffer(stagingBuffer,
+		createBuffer(stagingBuffer, 
 			stagingMemory,
 			vBufferSize + iBufferSize,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,

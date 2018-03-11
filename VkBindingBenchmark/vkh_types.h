@@ -62,7 +62,6 @@ namespace vkh
 		Allocation		imageMemory;
 	};
 
-
 	struct VkhCommandBuffer
 	{
 		VkCommandBuffer buffer;

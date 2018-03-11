@@ -1,0 +1,29 @@
+{
+    "push_constants": {
+        "size": 4,
+        "elements": [
+            {
+                "name": "tform",
+                "size": 4,
+                "offset": 0
+            }
+        ]
+    },
+    "descriptor_sets": [
+        {
+            "set": 0,
+            "binding": 0,
+            "name": "TRANSFORM_DATA",
+            "size": 65408,
+            "arrayLen": 1,
+            "type": "UNIFORM",
+            "members": [
+                {
+                    "name": "d",
+                    "size": 65408,
+                    "offset": 0
+                }
+            ]
+        }
+    ]
+}

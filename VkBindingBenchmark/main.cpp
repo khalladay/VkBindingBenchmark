@@ -2,8 +2,9 @@
 #include "mesh_loading.h"
 #include "rendering.h"
 #include "camera.h"
-#include "ubo_store.h"
 #include "vkh.h"
+#include "config.h"
+
 /*
 	Single threaded. Try to keep as much equal as possible, save for the experimental changes
 	Test - binding once with uniform buffers, binding once with ssbo, binding per object uniform data
@@ -49,15 +50,18 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int
 	
 	testMesh = loadMesh("..\\data\\mesh\\sponza.obj", false, appContext);
 	uboIdx.resize(testMesh.size());
-	initRendering(appContext, testMesh.size());
 
-	ubo_store::init(testMesh.size(), appContext);
+	printf("Num meshes: %d\n", testMesh.size());
+
+	data_store::init(appContext);
 	
 	for (uint32_t i = 0; i < testMesh.size(); ++i)
 	{
-		bool didAcquire = ubo_store::acquire(uboIdx[i]);
+		bool didAcquire = data_store::acquire(uboIdx[i]);
 		checkf(didAcquire, "Error acquiring ubo index");
 	}
+
+	initRendering(appContext, testMesh.size());
 
 	mainLoop();
 
@@ -96,7 +100,7 @@ void mainLoop()
 		float forwardBack = OS::getKey(KeyCode::KEY_W) ? 1.0f : (OS::getKey(KeyCode::KEY_S) ? -1.0f : 0.0f);
 
 		glm::vec3 translation = (Camera::localForward(worldCamera) * forwardBack) + (Camera::localRight(worldCamera) * leftRight);
-		Camera::translate(worldCamera, translation * 0.1f);
+		Camera::translate(worldCamera, translation * 0.5f);
 
 		if (OS::getKey(KEY_ESCAPE))
 		{

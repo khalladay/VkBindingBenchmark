@@ -1,13 +1,13 @@
 #define GLM_FORCE_RADIANS
 //#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
+#include "config.h"
 #include "rendering.h"
 #include "os_init.h"
 #include "vkh_material.h"
 #include "config.h"
 #include <glm/gtx/transform.hpp>
 #include <glm/glm.hpp>
-#include "ubo_store.h"
 
 struct RenderingData
 {
@@ -31,15 +31,14 @@ struct MatData
 	VkPipeline						graphicsPipeline;
 };
 
-
-MatData uvMaterial;
-MatData uboMaterial;
+MatData appMaterial;
 
 void createMainRenderPass(vkh::VkhContext& ctxt);
 void createDepthBuffer();
 void loadDebugMaterial();
-void loadUBOTestMaterial();
+void loadUBOTestMaterial(int num);
 void createGlobalShaderData();
+int bindDescriptorSets(int curPage, int pageToBind, VkCommandBuffer& cmd);
 
 void initRendering(vkh::VkhContext& context, uint32_t num)
 {
@@ -57,8 +56,11 @@ void initRendering(vkh::VkhContext& context, uint32_t num)
 		vkh::createCommandBuffer(appData.commandBuffers[i], context.gfxCommandPool, context.device);
 	}
 
+#if PUSH_TEST
 	loadDebugMaterial();
-	loadUBOTestMaterial();
+#else
+	loadUBOTestMaterial(num);
+#endif
 }
 
 void createGlobalShaderData()
@@ -69,44 +71,40 @@ void createGlobalShaderData()
 VkDescriptorBufferInfo bufferInfo;
 static VkWriteDescriptorSet setWrite;
 
-void loadUBOTestMaterial()
+void loadUBOTestMaterial(int num)
 {
 	//create descriptor set layout
 	VkDescriptorSetLayoutBinding layoutBinding;
-	layoutBinding = vkh::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0, 1);
+	layoutBinding = vkh::descriptorSetLayoutBinding(data_store::getDescriptorType(), VK_SHADER_STAGE_VERTEX_BIT, 0, 1);
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo = vkh::descriptorSetLayoutCreateInfo(&layoutBinding, 1);
 
-	VkResult res = vkCreateDescriptorSetLayout(appData.owningContext->device, &layoutInfo, nullptr, &uboMaterial.descSetLayout);
+	VkResult res = vkCreateDescriptorSetLayout(appData.owningContext->device, &layoutInfo, nullptr, &appMaterial.descSetLayout);
 	checkf(res == VK_SUCCESS, "Error creating desc set layout");
 
 
 	vkh::VkhMaterialCreateInfo createInfo = {};
 	createInfo.renderPass = appData.mainRenderPass;
-	createInfo.outPipeline = &uboMaterial.graphicsPipeline;
-	createInfo.outPipelineLayout = &uboMaterial.pipelineLayout;
+	createInfo.outPipeline = &appMaterial.graphicsPipeline;
+	createInfo.outPipelineLayout = &appMaterial.pipelineLayout;
 
 	createInfo.pushConstantStages = VK_SHADER_STAGE_VERTEX_BIT;
 	createInfo.pushConstantRange = sizeof(uint32_t);
-	createInfo.descSetLayouts.push_back(uboMaterial.descSetLayout);
-	vkh::createBasicMaterial("..\\data\\_generated\\builtshaders\\ubo_array.vert.spv", "..\\data\\_generated\\builtshaders\\debug_normals.frag.spv", *appData.owningContext, createInfo);
+	createInfo.descSetLayouts.push_back(appMaterial.descSetLayout);
 
-	vkh::createBuffer(ubo_store::getUBOPage(0), ubo_store::getAlloc(), sizeof(ObjectUBO) * 32, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, *appData.owningContext);
+	vkh::createBasicMaterial("..\\data\\_generated\\builtshaders\\ssbo_array.vert.spv", "..\\data\\_generated\\builtshaders\\debug_normals.frag.spv", *appData.owningContext, createInfo);
 
 	//allocate a descriptor set for each ubo transform array
+	appMaterial.descSets.resize(data_store::getNumPages());
 
-	uint32_t numTformUBOS = 1;// ubo_store::getNumPages();
-	uboMaterial.descSets.resize(1);
-
-
-	for (uint32_t i = 0; i < numTformUBOS; ++i)
+	for (uint32_t i = 0; i < data_store::getNumPages(); ++i)
 	{
-		VkDescriptorSetAllocateInfo allocInfo = vkh::descriptorSetAllocateInfo(&uboMaterial.descSetLayout, 1, appData.owningContext->descriptorPool);
-		res = vkAllocateDescriptorSets(appData.owningContext->device, &allocInfo, &uboMaterial.descSets[i]);
+		VkDescriptorSetAllocateInfo allocInfo = vkh::descriptorSetAllocateInfo(&appMaterial.descSetLayout, 1, appData.owningContext->descriptorPool);
+		res = vkAllocateDescriptorSets(appData.owningContext->device, &allocInfo, &appMaterial.descSets[i]);
 		checkf(res == VK_SUCCESS, "Error allocating global descriptor set");
 
 		bufferInfo = {};
-		bufferInfo.buffer = ubo_store::getUBOPage(i);
+		bufferInfo.buffer = data_store::getPage(i);
 		bufferInfo.offset = 0;
 		bufferInfo.range = VK_WHOLE_SIZE;
 
@@ -114,9 +112,9 @@ void loadUBOTestMaterial()
 		setWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		setWrite.dstBinding = 0;
 		setWrite.dstArrayElement = 0;
-		setWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		setWrite.descriptorType = data_store::getDescriptorType();
 		setWrite.descriptorCount = 1;
-		setWrite.dstSet = uboMaterial.descSets[i];
+		setWrite.dstSet = appMaterial.descSets[i];
 		setWrite.pBufferInfo = &bufferInfo;
 		setWrite.pImageInfo = 0;
 
@@ -126,50 +124,14 @@ void loadUBOTestMaterial()
 
 void loadDebugMaterial()
 {
-	VkDescriptorSetLayoutBinding layoutBinding;
-	layoutBinding = vkh::descriptorSetLayoutBinding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 0, 1);
-
-	VkDescriptorSetLayoutCreateInfo layoutInfo = vkh::descriptorSetLayoutCreateInfo(&layoutBinding, 1);
-
-	VkResult res = vkCreateDescriptorSetLayout(appData.owningContext->device, &layoutInfo, nullptr, &uvMaterial.descSetLayout);
-	checkf(res == VK_SUCCESS, "Error creating desc set layout");
-
-
 	vkh::VkhMaterialCreateInfo createInfo = {};
-	createInfo.outPipeline = &uvMaterial.graphicsPipeline;
-	createInfo.outPipelineLayout = &uvMaterial.pipelineLayout;
+	createInfo.outPipeline = &appMaterial.graphicsPipeline;
+	createInfo.outPipelineLayout = &appMaterial.pipelineLayout;
 	createInfo.renderPass = appData.mainRenderPass;
 	createInfo.pushConstantStages = VK_SHADER_STAGE_VERTEX_BIT;
-	createInfo.pushConstantRange = sizeof(glm::mat4);
-	createInfo.descSetLayouts.push_back(uvMaterial.descSetLayout);
+	createInfo.pushConstantRange = sizeof(glm::mat4)*2;
 
-	vkh::createBasicMaterial("..\\data\\_generated\\builtshaders\\common_vert.vert.spv", "..\\data\\_generated\\builtshaders\\debug_uvs.frag.spv", *appData.owningContext, createInfo);
-
-	vkh::createBuffer(appData.ubo, appData.uboAlloc, sizeof(glm::vec3)*32, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, *appData.owningContext);
-
-	VkDescriptorSetAllocateInfo allocInfo = vkh::descriptorSetAllocateInfo(&uvMaterial.descSetLayout, 1, appData.owningContext->descriptorPool);
-	uvMaterial.descSets.resize(1);
-	res = vkAllocateDescriptorSets(appData.owningContext->device, &allocInfo, &uvMaterial.descSets[0]);
-	checkf(res == VK_SUCCESS, "Error allocating global descriptor set");
-
-
-	bufferInfo = {};
-	bufferInfo.buffer = appData.ubo;
-	bufferInfo.offset = 0;
-	bufferInfo.range = VK_WHOLE_SIZE;
-
-	setWrite = {};
-	setWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	setWrite.dstBinding = 0;
-	setWrite.dstArrayElement = 0;
-	setWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	setWrite.descriptorCount = 1;
-	setWrite.dstSet = uvMaterial.descSets[0];
-	setWrite.pBufferInfo = &bufferInfo;
-	setWrite.pImageInfo = 0;
-
-	vkUpdateDescriptorSets(appData.owningContext->device, 1, &setWrite, 0, nullptr);
-
+	vkh::createBasicMaterial("..\\data\\_generated\\builtshaders\\common_vert.vert.spv", "..\\data\\_generated\\builtshaders\\debug_normals.frag.spv", *appData.owningContext, createInfo);
 }
 
 
@@ -244,35 +206,12 @@ void render(Camera::Cam& cam, const std::vector<vkh::MeshAsset>& drawCalls, cons
 		0.0f, 0.0f, 0.5f, 1.0f);
 
 	static float rads = 0.001f;
-	glm::mat4 proj = vulkanCorrection * p;
-	
+	glm::mat4 proj = vulkanCorrection * p;	
 	vkh::VkhContext& appContext = *appData.owningContext;
 
-	void* map;
-	VkResult res;
+	data_store::updateBuffers(view, proj, appContext);
 
-#if UBO_ONLY_TEST
-	res = vkMapMemory(appContext.device, ubo_store::getAlloc().handle, ubo_store::getAlloc().offset, ubo_store::getAlloc().size, 0, &map);
-
-	ObjectUBO* objPtr = (ObjectUBO*)map;
-
-	for (uint32_t i = 0; i < 32; ++i)
-	{
-		objPtr[i].model = proj * view;
-		objPtr[i].normal = glm::transpose(glm::inverse(view));
-	}
-	vkUnmapMemory(appContext.device, ubo_store::getAlloc().handle);
-
-
-#else
-	static glm::vec3 offset = glm::vec3(0.0f, 0.0f, 0.0f);
-	offset += glm::vec3(0, 0.01f, 0);
-
-	vkMapMemory(appContext.device, appData.uboAlloc.handle, appData.uboAlloc.offset, appData.uboAlloc.size, 0, &map);
-	memcpy(map, &offset, sizeof(glm::vec3));
-	vkUnmapMemory(appContext.device, appData.uboAlloc.handle);
-#endif
-	
+	VkResult res;	
 
 	//acquire an image from the swap chain
 	uint32_t imageIndex;
@@ -280,8 +219,6 @@ void render(Camera::Cam& cam, const std::vector<vkh::MeshAsset>& drawCalls, cons
 	res = vkAcquireNextImageKHR(appContext.device, appContext.swapChain.swapChain, UINT64_MAX, appContext.imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 	vkh::waitForFence(appContext.frameFences[imageIndex], appContext.device);
 	vkResetFences(appContext.device, 1, &appContext.frameFences[imageIndex]);
-
-
 
 	//record drawing
 	VkCommandBufferBeginInfo beginInfo = {};
@@ -308,42 +245,43 @@ void render(Camera::Cam& cam, const std::vector<vkh::MeshAsset>& drawCalls, cons
 
 	vkCmdBeginRenderPass(appData.commandBuffers[imageIndex], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
-#if UBO_ONLY_TEST
-	uint32_t currentlyBoundUBO = 9999;
+	int currentlyBound = -1;
 
-	vkCmdBindPipeline(appData.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, uboMaterial.graphicsPipeline);
-	vkCmdBindDescriptorSets(appData.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, uboMaterial.pipelineLayout, 0, 1, &uboMaterial.descSets[0], 0, 0);
-#endif
+	vkCmdBindPipeline(appData.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, appMaterial.graphicsPipeline);
 
 	for (uint32_t i = 0; i < drawCalls.size(); ++i)
 	{
-#if UBO_ONLY_TEST
+#if UBO_TEST || SSBO_TEST
 		glm::uint32 uboSlot = uboIdx[i] >> 3;
 		glm::uint32 uboPage = uboIdx[i] & 0x7;
 
+		currentlyBound = bindDescriptorSets(currentlyBound, uboPage, appData.commandBuffers[imageIndex]);
+
 		vkCmdPushConstants(
 			appData.commandBuffers[imageIndex],
-			uboMaterial.pipelineLayout,
+			appMaterial.pipelineLayout,
 			VK_SHADER_STAGE_VERTEX_BIT,
 			0,
 			sizeof(glm::uint32),
 			(void*)&uboSlot);
-#else
 
+#elif PUSH_TEST
+		
+		//0 is MVP, 1 is normal
+		glm::mat4 frameData[2];
 		glm::mat4 vp = vulkanCorrection * p * view;
+		frameData[0] = vp * glm::scale(glm::vec3(0.1, 0.1, 0.1));
 
-		vkCmdBindPipeline(appData.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, uvMaterial.graphicsPipeline);
-		vkCmdBindDescriptorSets(appData.commandBuffers[imageIndex], VK_PIPELINE_BIND_POINT_GRAPHICS, uvMaterial.pipelineLayout, 0, 1, &uvMaterial.descSets[0], 0, 0);
-
-		glm::mat4 mvp = vp * glm::scale(glm::vec3(0.1, 0.1, 0.1));// *(glm::translate(glm::vec3(0.0f, 0.0f, 5.0f)) * glm::scale(glm::vec3(1.f, 1.f, 1.f)));
+		//all objects use an identity model matrix
+		frameData[1] = glm::transpose(glm::inverse(view));
 
 		vkCmdPushConstants(
 			appData.commandBuffers[imageIndex],
-			uvMaterial.pipelineLayout,
+			appMaterial.pipelineLayout,
 			VK_SHADER_STAGE_VERTEX_BIT,
 			0,
-			sizeof(glm::mat4),
-			(void*)&mvp);
+			sizeof(glm::mat4)*2,
+			(void*)&frameData);
 #endif
 
 		VkBuffer vertexBuffers[] = { drawCalls[i].buffer };
@@ -394,4 +332,14 @@ void render(Camera::Cam& cam, const std::vector<vkh::MeshAsset>& drawCalls, cons
 	presentInfo.pResults = nullptr; // Optional
 	res = vkQueuePresentKHR(appContext.deviceQueues.transferQueue, &presentInfo);
 
+}
+
+int bindDescriptorSets(int currentlyBound, int page, VkCommandBuffer& cmd)
+{
+	if (currentlyBound != page)
+	{
+		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, appMaterial.pipelineLayout, 0, 1, &appMaterial.descSets[page], 0, 0);
+	}
+
+	return page;
 }

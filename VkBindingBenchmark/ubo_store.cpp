@@ -1,97 +1,138 @@
 #include "ubo_store.h"
 #include "vkh.h"
 #include "config.h"
-
+#include <deque>
+#include <glm/gtx/transform.hpp>
+#include "shader_inputs.h"
 
 namespace ubo_store
 {
-	VkBuffer globalUBOPages;
-	vkh::Allocation globalUBOAllocs;
-
 	uint32_t uboArrayLen;
 	uint32_t countPerPage;
 	uint32_t numPages;
 	uint32_t size;
 
-	std::deque<uint32_t> freeIndices;
+	vkh::VkhContext* ctxt;
 
-	void init(int num, vkh::VkhContext& ctxt)
+	struct UBOPage
 	{
-		uboArrayLen = num;
-		for (uint32_t i = 0; i < num; ++i)
-		{
-			freeIndices.push_back(i);
-		}
+		VkBuffer buf;
+		vkh::Allocation alloc;
+		std::deque<uint32_t> freeIndices;
+		void* map;
+	};
+
+	std::vector<UBOPage> pages;
+
+	void init(vkh::VkhContext& _ctxt)
+	{		
+		ctxt = &_ctxt;
 		countPerPage = 511;
-		numPages = (num / countPerPage) + 1;
-		size = (sizeof(ObjectUBO) * 511);
+		size = (sizeof(VShaderInput) * 511);
+	}
 
-		/*
-#if GLOBAL_UBO_ARRAY
-
-		countPerPage = 32;
-		numPages = (num / countPerPage) + 1;
-		size = (sizeof(ObjectUBO) * 32);
+	UBOPage& createNewPage()
+	{
+		UBOPage page;
+		vkh::VkhContext& _ctxt = *ctxt;
 
 		vkh::createBuffer(
-			wtf,
-			wtfA,
+			page.buf,
+			page.alloc,
 			size,
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-			ctxt);
-#endif*/
+			VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+			_ctxt);
+
+		vkMapMemory(_ctxt.device, page.alloc.handle, page.alloc.offset, page.alloc.size, 0, &page.map);
+
+		for (uint32_t i = 0; i < countPerPage; ++i)
+		{
+			page.freeIndices.push_back(i);
+		}
+
+		pages.push_back(page);
+		return pages[pages.size() - 1];
 	}
 
-	vkh::Allocation& getAlloc()
+	vkh::Allocation& getAlloc(uint32_t idx)
 	{
-		return globalUBOAllocs;
+		checkf(pages.size() >= (idx + 1), "Array index out of bounds");
+		return pages[idx].alloc;
 	}
 
-	VkBuffer& getUBOPage(uint32_t idx)
+	VkBuffer& getPage(uint32_t idx)
 	{
-		return globalUBOPages;
+		checkf(pages.size() >= (idx + 1), "Array index out of bounds");
+		return pages[idx].buf;
 	}
 
 	bool acquire(uint32_t& outIdx)
 	{
-		if (freeIndices.size() > 0)
-		{
-			outIdx = freeIndices.front();
-			freeIndices.pop_front();
+		UBOPage* p = nullptr;
 
-			//bit shift the page index
-			outIdx = outIdx << 3;
-			outIdx += (outIdx / countPerPage);
-
-			return true;
-		}
-		else
+		for (auto& page : pages)
 		{
-			return false;
+			if (page.freeIndices.size() > 0)
+			{
+				p = &page;
+				break;
+			}
 		}
+
+		if (!p)
+		{
+			p = &createNewPage();
+		}
+		
+		outIdx = p->freeIndices.front();
+		p->freeIndices.pop_front();
+
+		outIdx = outIdx << 3;
+		outIdx += (outIdx / countPerPage);
+
+		return true;
+
 	}
 
 	uint32_t getNumPages()
 	{
-		return numPages;
+		return pages.size();
 	}
 
 	void updateBuffers(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, vkh::VkhContext& ctxt)
 	{
-	/*	uint32_t size = globalUBOAllocs.size;
+		std::vector<VkMappedMemoryRange> rangesToUpdate;
+		rangesToUpdate.resize(pages.size());
 
-		void* map;
-		VkResult res = vkMapMemory(ctxt.device, globalUBOAllocs.handle, globalUBOAllocs.offset, globalUBOAllocs.size, 0, &map);
-		ObjectUBO* objPtr = (ObjectUBO*)map;
-
-		for (uint32_t i = 0; i < 32; ++i)
+		for (uint32_t p = 0; p < pages.size(); ++p)
 		{
-			objPtr[i].model = projMatrix * viewMatrix;
-			objPtr[i].normal = glm::transpose(glm::inverse(viewMatrix));
+			UBOPage page = pages[p];
+			VShaderInput* objPtr = (VShaderInput*)page.map;
+
+			for (uint32_t i = 0; i < countPerPage; ++i)
+			{
+				objPtr[i].model = projMatrix * viewMatrix;
+
+				//all objects use an identity model matrix
+				objPtr[i].normal = glm::transpose(glm::inverse(viewMatrix));
+			}
+
+			VkMappedMemoryRange curRange = {};
+			curRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+			curRange.memory = page.alloc.handle;
+			curRange.offset = page.alloc.offset;
+			curRange.size = page.alloc.size;
+			curRange.pNext = nullptr;
+
+			rangesToUpdate[p] = curRange;
 		}
 
-		vkUnmapMemory(ctxt.device, globalUBOAllocs.handle);*/
-	//	vkh::copyDataToBuffer(&globalUBOPages, sizeof(ObjectUBO) * uboArrayLen, 0, (char*)uboArray, ctxt);	
+		vkFlushMappedMemoryRanges(ctxt.device, rangesToUpdate.size(), rangesToUpdate.data());
+	}
+
+	VkDescriptorType getDescriptorType()
+	{
+		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	}
 }

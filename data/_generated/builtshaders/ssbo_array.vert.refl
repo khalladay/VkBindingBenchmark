@@ -1,0 +1,13 @@
+{
+    "push_constants": {
+        "size": 4,
+        "elements": [
+            {
+                "name": "tform",
+                "size": 4,
+                "offset": 0
+            }
+        ]
+    },
+    "descriptor_sets": []
+}

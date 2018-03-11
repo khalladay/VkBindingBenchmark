@@ -1,11 +1,16 @@
 {
     "push_constants": {
-        "size": 64,
+        "size": 128,
         "elements": [
             {
                 "name": "mvp",
                 "size": 64,
                 "offset": 0
+            },
+            {
+                "name": "it_mv",
+                "size": 64,
+                "offset": 64
             }
         ]
     },

@@ -57,6 +57,12 @@
     <ClCompile Include="ubo_store.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ssbo_store.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="null_store.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="debug.h">
@@ -119,6 +125,15 @@
     <ClInclude Include="ubo_store.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ssbo_store.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shader_inputs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="null_store.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\data\shader\common_vert.vert">
@@ -131,6 +146,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\data\shader\debug_normals.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\data\shader\ssbo_array.vert">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
