@@ -1,10 +1,10 @@
 #pragma once
 
-#define UBO_TEST 0
-#define SSBO_TEST 1
+#define UBO_TEST 1
+#define SSBO_TEST 0
 #define PUSH_TEST 0
 
-#define DEVICE_LOCAL 0 
+#define DEVICE_LOCAL 1 
 
 #if UBO_TEST
 #define data_store ubo_store

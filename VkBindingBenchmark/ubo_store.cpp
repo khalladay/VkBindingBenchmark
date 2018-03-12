@@ -19,7 +19,12 @@ namespace ubo_store
 		VkBuffer buf;
 		vkh::Allocation alloc;
 		std::deque<uint32_t> freeIndices;
+
+#if DEVICE_LOCAL
+		char* map;
+#else
 		void* map;
+#endif
 	};
 
 	std::vector<UBOPage> pages;
@@ -27,8 +32,8 @@ namespace ubo_store
 	void init(vkh::VkhContext& _ctxt)
 	{		
 		ctxt = &_ctxt;
-		countPerPage = 511;
-		size = (sizeof(VShaderInput) * 511);
+		countPerPage = 256;
+		size = (sizeof(VShaderInput) * 256);
 	}
 
 	UBOPage& createNewPage()
@@ -41,15 +46,16 @@ namespace ubo_store
 			page.alloc,
 			size,
 #if DEVICE_LOCAL
-			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
-			VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
-#else
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+#else
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
 #endif
 			_ctxt);
 
 #if DEVICE_LOCAL
+		page.map = (char*)malloc(size);
 #else
 		vkMapMemory(_ctxt.device, page.alloc.handle, page.alloc.offset, page.alloc.size, 0, &page.map);
 #endif
@@ -139,7 +145,7 @@ namespace ubo_store
 #if DEVICE_LOCAL
 		for (uint32_t p = 0; p < pages.size(); ++p)
 		{
-			
+			vkh::copyDataToBuffer(&pages[p].buf, size, 0, (char*)pages[p].map, ctxt);
 		}
 #else
 		vkFlushMappedMemoryRanges(ctxt.device, rangesToUpdate.size(), rangesToUpdate.data());
