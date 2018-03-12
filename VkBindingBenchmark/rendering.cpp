@@ -92,7 +92,7 @@ void loadUBOTestMaterial(int num)
 	createInfo.pushConstantRange = sizeof(uint32_t);
 	createInfo.descSetLayouts.push_back(appMaterial.descSetLayout);
 
-	vkh::createBasicMaterial("..\\data\\_generated\\builtshaders\\ssbo_array.vert.spv", "..\\data\\_generated\\builtshaders\\debug_normals.frag.spv", *appData.owningContext, createInfo);
+	vkh::createBasicMaterial(VERT_SHADER_NAME, "..\\data\\_generated\\builtshaders\\debug_normals.frag.spv", *appData.owningContext, createInfo);
 
 	//allocate a descriptor set for each ubo transform array
 	appMaterial.descSets.resize(data_store::getNumPages());

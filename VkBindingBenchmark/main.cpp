@@ -32,11 +32,14 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int
 	vkh::VkhContextCreateInfo ctxtInfo = {};
 	ctxtInfo.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 	ctxtInfo.types.push_back(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
+	ctxtInfo.types.push_back(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 	ctxtInfo.types.push_back(VK_DESCRIPTOR_TYPE_SAMPLER);
 
-	ctxtInfo.typeCounts.push_back(128);
-	ctxtInfo.typeCounts.push_back(64);
-	ctxtInfo.typeCounts.push_back(64);
+	ctxtInfo.typeCounts.push_back(512);
+	ctxtInfo.typeCounts.push_back(512);
+	ctxtInfo.typeCounts.push_back(512);
+	ctxtInfo.typeCounts.push_back(512);
+	ctxtInfo.typeCounts.push_back(1);
 
 	initContext(ctxtInfo, "Uniform Buffer Array Demo", Instance, wndHdl, appContext);
 
@@ -48,7 +51,7 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int
 
 	//load a test obj mesh
 	
-	testMesh = loadMesh("..\\data\\mesh\\sponza.obj", false, appContext);
+	testMesh = loadMesh("..\\data\\mesh\\exterior.obj", false, appContext);
 	uboIdx.resize(testMesh.size());
 
 	printf("Num meshes: %d\n", testMesh.size());

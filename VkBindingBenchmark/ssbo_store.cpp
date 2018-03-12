@@ -5,7 +5,12 @@
 
 namespace ssbo_store
 {
+#if DEVICE_LOCAL
+	char* map;
+#else
 	void* map;
+#endif
+
 	vkh::VkhContext* ctxt;
 	uint32_t num;
 
@@ -16,17 +21,26 @@ namespace ssbo_store
 	void init(vkh::VkhContext& _ctxt)
 	{
 		ctxt = &_ctxt;
-		num = 512;
+		num = 1024;
 
 		vkh::createBuffer(
 			buf, 
 			alloc, 
 			sizeof(VShaderInput) * num, 
-			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, 
-			VK_MEMORY_PROPERTY_HOST_CACHED_BIT, 
+#if DEVICE_LOCAL
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+#else
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+#endif
 			_ctxt);
 
+#if DEVICE_LOCAL
+		map = (char*)malloc(sizeof(VShaderInput) * num);
+#else
 		vkMapMemory(_ctxt.device, alloc.handle, alloc.offset, alloc.size, 0, &map);
+#endif
 
 		for (uint32_t i = 0; i < num; ++i)
 		{
@@ -39,6 +53,7 @@ namespace ssbo_store
 	{
 		if (freeIndices.size() == 0)
 		{
+			printf("NO SLOTS LEFT IN SSBO\n");
 			return false;
 		}
 
@@ -80,12 +95,16 @@ namespace ssbo_store
 
 		VkMappedMemoryRange range;
 		range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-		range.offset = 0;
+		range.offset = alloc.offset;
 		range.pNext = nullptr;
 		range.size = num * sizeof(VShaderInput);
 		range.memory = alloc.handle;
 
+#if DEVICE_LOCAL
+		vkh::copyDataToBuffer(&buf, range.size, 0, (char*)map, ctxt);
+#else
 		vkFlushMappedMemoryRanges(ctxt.device, 1, &range);
+#endif
 
 
 	}

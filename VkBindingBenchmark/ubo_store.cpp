@@ -40,11 +40,19 @@ namespace ubo_store
 			page.buf,
 			page.alloc,
 			size,
+#if DEVICE_LOCAL
 			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT,
 			VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+#else
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+#endif
 			_ctxt);
 
+#if DEVICE_LOCAL
+#else
 		vkMapMemory(_ctxt.device, page.alloc.handle, page.alloc.offset, page.alloc.size, 0, &page.map);
+#endif
 
 		for (uint32_t i = 0; i < countPerPage; ++i)
 		{
@@ -85,11 +93,11 @@ namespace ubo_store
 			p = &createNewPage();
 		}
 		
-		outIdx = p->freeIndices.front();
+		uint32_t slot = p->freeIndices.front();
 		p->freeIndices.pop_front();
 
-		outIdx = outIdx << 3;
-		outIdx += (outIdx / countPerPage);
+		outIdx = slot << 3;
+		outIdx += (slot / countPerPage);
 
 		return true;
 
@@ -128,7 +136,15 @@ namespace ubo_store
 			rangesToUpdate[p] = curRange;
 		}
 
+#if DEVICE_LOCAL
+		for (uint32_t p = 0; p < pages.size(); ++p)
+		{
+			
+		}
+#else
 		vkFlushMappedMemoryRanges(ctxt.device, rangesToUpdate.size(), rangesToUpdate.data());
+#endif
+
 	}
 
 	VkDescriptorType getDescriptorType()
