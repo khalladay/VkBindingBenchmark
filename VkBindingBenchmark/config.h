@@ -1,10 +1,11 @@
 #pragma once
 
-#define UBO_TEST 1
-#define SSBO_TEST 0
-#define PUSH_TEST 0
+#define UBO_TEST 0 //device local: 470ish (~120ish meshes)  coherent: 470ish
+#define SSBO_TEST 1 //  device local : 420 fps, coherent: 150 fps
+#define PUSH_TEST 0 // 486
 
-#define DEVICE_LOCAL 1 
+#define DEVICE_LOCAL 0
+#define COMBINE_MESHES 1
 
 #if UBO_TEST
 #define data_store ubo_store

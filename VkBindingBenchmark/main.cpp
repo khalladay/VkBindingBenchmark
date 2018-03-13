@@ -52,6 +52,10 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int
 	//load a test obj mesh
 	
 	testMesh = loadMesh("..\\data\\mesh\\exterior.obj", false, appContext);
+	auto interior = loadMesh("..\\data\\mesh\\interior.obj", false, appContext);
+
+	testMesh.insert(testMesh.end(), interior.begin(), interior.end());
+
 	uboIdx.resize(testMesh.size());
 
 	printf("Num meshes: %d\n", testMesh.size());
@@ -103,7 +107,7 @@ void mainLoop()
 		float forwardBack = OS::getKey(KeyCode::KEY_W) ? 1.0f : (OS::getKey(KeyCode::KEY_S) ? -1.0f : 0.0f);
 
 		glm::vec3 translation = (Camera::localForward(worldCamera) * forwardBack) + (Camera::localRight(worldCamera) * leftRight);
-		Camera::translate(worldCamera, translation * 0.5f);
+		Camera::translate(worldCamera, translation * 15.0f * (float)dt);
 
 		if (OS::getKey(KEY_ESCAPE))
 		{

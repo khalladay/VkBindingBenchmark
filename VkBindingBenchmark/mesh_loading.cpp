@@ -4,8 +4,13 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
+#include "config.h"
 
+#if COMBINE_MESHES
 static const int defaultFlags =  aiProcess_JoinIdenticalVertices | aiProcess_PreTransformVertices | aiProcess_FlipWindingOrder | aiProcess_Triangulate;
+#else
+static const int defaultFlags =  aiProcess_FlipWindingOrder | aiProcess_Triangulate;
+#endif
 
 std::vector<vkh::MeshAsset> loadMesh(const char* filepath, bool combineSubMeshes, vkh::VkhContext& ctxt)
 {

@@ -2,7 +2,7 @@
 #include <glm/gtx/transform.hpp>
 #include <deque>
 #include "shader_inputs.h"
-
+#include "config.h"
 namespace ssbo_store
 {
 #if DEVICE_LOCAL
@@ -21,7 +21,7 @@ namespace ssbo_store
 	void init(vkh::VkhContext& _ctxt)
 	{
 		ctxt = &_ctxt;
-		num = 1024;
+		num = 32000;
 
 		vkh::createBuffer(
 			buf, 
