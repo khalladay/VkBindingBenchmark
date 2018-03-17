@@ -169,6 +169,7 @@
     <None Include="..\data\shader\common_vert.vert" />
     <None Include="..\data\shader\debug_normals.frag" />
     <None Include="..\data\shader\debug_uvs.frag" />
+    <None Include="..\data\shader\dynamic_ubo.vert" />
     <None Include="..\data\shader\ssbo_array.vert" />
     <None Include="..\data\shader\ubo_array.vert" />
   </ItemGroup>

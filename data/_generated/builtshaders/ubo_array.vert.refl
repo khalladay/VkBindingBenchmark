@@ -14,13 +14,13 @@
             "set": 0,
             "binding": 0,
             "name": "TRANSFORM_DATA",
-            "size": 65408,
+            "size": 32768,
             "arrayLen": 1,
             "type": "UNIFORM",
             "members": [
                 {
                     "name": "d",
-                    "size": 65408,
+                    "size": 32768,
                     "offset": 0
                 }
             ]

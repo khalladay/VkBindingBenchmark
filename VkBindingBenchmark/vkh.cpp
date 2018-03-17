@@ -322,13 +322,29 @@ namespace vkh
 		vkCmdCopyBuffer(buffer.buffer, srcBuffer, dstBuffer, 1, &copyRegion);
 	}
 
-	void copyBuffer(VkBuffer& srcBuffer, VkBuffer& dstBuffer, VkDeviceSize size, uint32_t srcOffset, uint32_t dstOffset, VkhContext& ctxt)
+	void copyBuffer(VkBuffer& srcBuffer, VkBuffer& dstBuffer, VkDeviceSize size, uint32_t srcOffset, uint32_t dstOffset, VkCommandBuffer& buffer)
 	{
-		VkhCommandBuffer scratch = beginScratchCommandBuffer(ECommandPoolType::Transfer, ctxt);
+		VkBufferCopy copyRegion = {};
+		copyRegion.srcOffset = srcOffset; // Optional
+		copyRegion.dstOffset = dstOffset; // Optional
+		copyRegion.size = size;
+		vkCmdCopyBuffer(buffer, srcBuffer, dstBuffer, 1, &copyRegion);
+	}
 
-		copyBuffer(srcBuffer, dstBuffer, size, srcOffset, dstOffset, scratch);
+	void copyBuffer(VkBuffer& srcBuffer, VkBuffer& dstBuffer, VkDeviceSize size, uint32_t srcOffset, uint32_t dstOffset, VkCommandBuffer* buffer, VkhContext& ctxt)
+	{
+		if (!buffer)
+		{
+			VkhCommandBuffer scratch = beginScratchCommandBuffer(ECommandPoolType::Transfer, ctxt);
 
-		submitScratchCommandBuffer(scratch);
+			copyBuffer(srcBuffer, dstBuffer, size, srcOffset, dstOffset, scratch);
+
+			submitScratchCommandBuffer(scratch);
+		}
+		else
+		{
+			copyBuffer(srcBuffer, dstBuffer, size, srcOffset, dstOffset, *buffer);
+		}
 	}
 
 	void createShaderModule(VkShaderModule& outModule, const char* binaryData, size_t dataSize, const VkhContext& ctxt)
@@ -390,7 +406,7 @@ namespace vkh
 		vkBindBufferMemory(ctxt.device, outBuffer, bufferMemory.handle, bufferMemory.offset);
 	}
 
-	void copyDataToBuffer(VkBuffer* buffer, uint32_t dataSize, uint32_t dstOffset, char* data, VkhContext& ctxt)
+	void copyDataToBuffer(VkBuffer* buffer, uint32_t dataSize, uint32_t dstOffset, char* data, VkCommandBuffer* commandBuffer, VkhContext& ctxt)
 	{
 		VkBuffer stagingBuffer;
 		vkh::Allocation stagingMemory;
@@ -410,10 +426,17 @@ namespace vkh
 
 		vkUnmapMemory(ctxt.device, stagingMemory.handle);
 
-		vkh::VkhCommandBuffer scratch = vkh::beginScratchCommandBuffer(vkh::ECommandPoolType::Transfer, ctxt);
-		vkh::copyBuffer(stagingBuffer, *buffer, dataSize, 0, dstOffset, scratch);
-		vkh::submitScratchCommandBuffer(scratch);
-		vkh::freeDeviceMemory(stagingMemory);
+		if (commandBuffer)
+		{
+			vkh::copyBuffer(stagingBuffer, *buffer, dataSize, 0, dstOffset, *commandBuffer);
+		}
+		else
+		{
+			vkh::VkhCommandBuffer scratch = vkh::beginScratchCommandBuffer(vkh::ECommandPoolType::Transfer, ctxt);
+			vkh::copyBuffer(stagingBuffer, *buffer, dataSize, 0, dstOffset, scratch);
+			vkh::submitScratchCommandBuffer(scratch);
+			vkh::freeDeviceMemory(stagingMemory);
+		}
 	}
 
 	void createImage(VkImage& outImage, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, const VkhContext& ctxt)

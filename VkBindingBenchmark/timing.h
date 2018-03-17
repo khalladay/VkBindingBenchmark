@@ -1,7 +1,7 @@
 #pragma once
 #include "os_init.h"
 #include <stdint.h>
-#define FPS_DATA_FRAME_HISTORY_SIZE 256
+#define FPS_DATA_FRAME_HISTORY_SIZE 1024
 
 struct TimeSpan
 {

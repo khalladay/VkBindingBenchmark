@@ -25,6 +25,11 @@ namespace ubo_store
 #else
 		void* map;
 #endif
+
+#if PERSISTENT_STAGING_BUFFER
+		VkBuffer stagingBuf;
+		vkh::Allocation stagingAlloc;
+#endif
 	};
 
 	std::vector<UBOPage> pages;
@@ -53,6 +58,17 @@ namespace ubo_store
 			VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
 #endif
 			_ctxt);
+
+#if PERSISTENT_STAGING_BUFFER
+		vkh::createBuffer(
+			page.stagingBuf,
+			page.stagingAlloc,
+			size,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+			_ctxt
+		);
+#endif
 
 #if DEVICE_LOCAL
 		page.map = (char*)malloc(size);
@@ -114,7 +130,7 @@ namespace ubo_store
 		return pages.size();
 	}
 
-	void updateBuffers(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, vkh::VkhContext& ctxt)
+	void updateBuffers(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, VkCommandBuffer* commandBuffer, vkh::VkhContext& ctxt)
 	{
 		std::vector<VkMappedMemoryRange> rangesToUpdate;
 		rangesToUpdate.resize(pages.size());
@@ -142,19 +158,25 @@ namespace ubo_store
 			rangesToUpdate[p] = curRange;
 		}
 
-#if DEVICE_LOCAL
-		for (uint32_t p = 0; p < pages.size(); ++p)
-		{
-			vkh::copyDataToBuffer(&pages[p].buf, size, 0, (char*)pages[p].map, ctxt);
-		}
-#else
-		vkFlushMappedMemoryRanges(ctxt.device, rangesToUpdate.size(), rangesToUpdate.data());
-#endif
+		#if !DEVICE_LOCAL
+			vkFlushMappedMemoryRanges(ctxt.device, rangesToUpdate.size(), rangesToUpdate.data());
+		#endif
 
+		#if DEVICE_LOCAL
+			for (uint32_t p = 0; p < pages.size(); ++p)
+			{
+				#if PERSISTENT_STAGING_BUFFER	
+					vkh::copyDataToBuffer(&pages[p].stagingBuf, size, 0, (char*)pages[p].map, commandBuffer, ctxt);
+					vkh::copyBuffer(pages[p].stagingBuf, pages[p].buf, size, 0, 0, commandBuffer, ctxt);
+				#else
+					vkh::copyDataToBuffer(&pages[p].buf, size, 0, (char*)pages[p].map, commandBuffer, ctxt);
+				#endif
+			}
+		#endif
 	}
 
 	VkDescriptorType getDescriptorType()
 	{
-		return VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		return DYNAMIC_UBO ? VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC : VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	}
 }

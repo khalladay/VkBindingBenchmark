@@ -151,5 +151,8 @@
     <None Include="..\data\shader\ssbo_array.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\data\shader\dynamic_ubo.vert">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

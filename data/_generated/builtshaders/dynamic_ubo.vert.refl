@@ -1,0 +1,23 @@
+{
+    "push_constants": {
+        "size": 4,
+        "elements": []
+    },
+    "descriptor_sets": [
+        {
+            "set": 0,
+            "binding": 0,
+            "name": "TRANSFORM_DATA",
+            "size": 128,
+            "arrayLen": 1,
+            "type": "UNIFORM",
+            "members": [
+                {
+                    "name": "d",
+                    "size": 128,
+                    "offset": 0
+                }
+            ]
+        }
+    ]
+}

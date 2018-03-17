@@ -24,11 +24,15 @@ namespace vkh
 	void allocateDeviceMemory(Allocation& outMem, AllocationCreateInfo info, VkhContext& ctxt);
 	VkhCommandBuffer beginScratchCommandBuffer(ECommandPoolType type, VkhContext& ctxt);
 	void submitScratchCommandBuffer(VkhCommandBuffer& commandBuffer);
+
+	//todo: do we really need three of these? 
 	void copyBuffer(VkBuffer& srcBuffer, VkBuffer& dstBuffer, VkDeviceSize size, uint32_t srcOffset, uint32_t dstOffset, VkhCommandBuffer& buffer);
-	void copyBuffer(VkBuffer& srcBuffer, VkBuffer& dstBuffer, VkDeviceSize size, uint32_t srcOffset, uint32_t dstOffset, VkhContext& ctxt);
+	void copyBuffer(VkBuffer& srcBuffer, VkBuffer& dstBuffer, VkDeviceSize size, uint32_t srcOffset, uint32_t dstOffset, VkCommandBuffer& buffer);
+	void copyBuffer(VkBuffer& srcBuffer, VkBuffer& dstBuffer, VkDeviceSize size, uint32_t srcOffset, uint32_t dstOffset, VkCommandBuffer* buffer, VkhContext& ctxt);
+
 	void createShaderModule(VkShaderModule& outModule, const char* binaryData, size_t dataSize, const VkhContext& ctxt);
 	void createBuffer(VkBuffer& outBuffer, Allocation& bufferMemory, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkhContext& ctxt);
-	void copyDataToBuffer(VkBuffer* buffer, uint32_t dataSize, uint32_t dstOffset, char* data, VkhContext& ctxt);
+	void copyDataToBuffer(VkBuffer* buffer, uint32_t dataSize, uint32_t dstOffset, char* data, VkCommandBuffer* commandBuffer, VkhContext& ctxt);
 	void createImage(VkImage& outImage, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, const VkhContext& ctxt);
 	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, VkhContext& ctxt);
 	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, VkhContext& ctxt);

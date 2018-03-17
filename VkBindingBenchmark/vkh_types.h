@@ -109,6 +109,7 @@ namespace vkh
 		VkCommandPool			gfxCommandPool;
 		VkCommandPool			transferCommandPool;
 		VkCommandPool			presentCommandPool;
+		VkQueryPool				queryPool;
 		VkDescriptorPool		descriptorPool;
 		VkSemaphore				imageAvailableSemaphore;
 		VkSemaphore				renderFinishedSemaphore;

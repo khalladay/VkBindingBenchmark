@@ -3,10 +3,11 @@
 #include "vkh.h"
 #include "vkh_mesh.h"
 #include "camera.h"
+
 struct DrawCall
 {
-	uint16_t mesh;
-	uint32_t material;
+	vkh::MeshAsset mesh;
+	uint32_t uboIdx;
 };
 
 void initRendering(vkh::VkhContext& context, uint32_t num);

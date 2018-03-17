@@ -26,7 +26,7 @@ void mainLoop();
 
 int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int showCode)
 {
-	HWND wndHdl = OS::makeWindow(Instance, "Texture Array Demo", 800, 600);
+	HWND wndHdl = OS::makeWindow(Instance, "Texture Array Demo", SCREEN_W, SCREEN_H);
 	OS::initializeInput();
 
 	vkh::VkhContextCreateInfo ctxtInfo = {};
@@ -50,11 +50,13 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int
 	vkh::Mesh::setGlobalVertexLayout(meshLayout);
 
 	//load a test obj mesh
-	
+#if BISTRO_TEST
 	testMesh = loadMesh("..\\data\\mesh\\exterior.obj", false, appContext);
 	auto interior = loadMesh("..\\data\\mesh\\interior.obj", false, appContext);
-
 	testMesh.insert(testMesh.end(), interior.begin(), interior.end());
+#else
+	testMesh = loadMesh("..\\data\\mesh\\sponza.obj", false, appContext);
+#endif
 
 	uboIdx.resize(testMesh.size());
 
@@ -67,6 +69,19 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int
 		bool didAcquire = data_store::acquire(uboIdx[i]);
 		checkf(didAcquire, "Error acquiring ubo index");
 	}
+
+#if SHUFFLE_MESHES
+	srand(8675309);
+
+	for (uint32_t i = 0; i < testMesh.size(); ++i)
+	{
+		uint32_t newSlot = rand() % (testMesh.size());
+
+		std::swap(testMesh[i], testMesh[newSlot]);
+		std::swap(uboIdx[i], uboIdx[newSlot]);
+	}
+
+#endif
 
 	initRendering(appContext, testMesh.size());
 
@@ -107,7 +122,7 @@ void mainLoop()
 		float forwardBack = OS::getKey(KeyCode::KEY_W) ? 1.0f : (OS::getKey(KeyCode::KEY_S) ? -1.0f : 0.0f);
 
 		glm::vec3 translation = (Camera::localForward(worldCamera) * forwardBack) + (Camera::localRight(worldCamera) * leftRight);
-		Camera::translate(worldCamera, translation * 15.0f * (float)dt);
+		Camera::translate(worldCamera, translation * 10.0f * (float)dt);
 
 		if (OS::getKey(KEY_ESCAPE))
 		{

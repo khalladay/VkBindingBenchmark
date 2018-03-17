@@ -9,7 +9,7 @@ struct tdata
 
 layout(binding=0,set=0) uniform TRANSFORM_DATA
 {
-	tdata d[511]; //512 is the max amount we can store in a ubo on nvidia cards
+	tdata d[256]; //512 is the max amount we can store in a ubo on nvidia cards
 }transform;
 
 layout(push_constant) uniform transformData

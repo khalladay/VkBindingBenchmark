@@ -18,6 +18,11 @@ namespace ssbo_store
 	vkh::Allocation alloc;
 	std::deque<uint32_t> freeIndices;
 
+#if PERSISTENT_STAGING_BUFFER
+	VkBuffer stagingBuffer;
+	vkh::Allocation stagingAlloc;
+#endif
+
 	void init(vkh::VkhContext& _ctxt)
 	{
 		ctxt = &_ctxt;
@@ -40,6 +45,16 @@ namespace ssbo_store
 		map = (char*)malloc(sizeof(VShaderInput) * num);
 #else
 		vkMapMemory(_ctxt.device, alloc.handle, alloc.offset, alloc.size, 0, &map);
+#endif
+
+#if PERSISTENT_STAGING_BUFFER
+		vkh::createBuffer(
+			stagingBuffer,
+			stagingAlloc,
+			sizeof(VShaderInput) * num,
+			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+			VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+			_ctxt);
 #endif
 
 		for (uint32_t i = 0; i < num; ++i)
@@ -83,7 +98,7 @@ namespace ssbo_store
 		return alloc;
 	}
 
-	void updateBuffers(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, vkh::VkhContext& ctxt)
+	void updateBuffers(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, VkCommandBuffer* commandBuffer, vkh::VkhContext& ctxt)
 	{
 		VShaderInput* objPtr = (VShaderInput*)map;
 
@@ -100,13 +115,19 @@ namespace ssbo_store
 		range.size = num * sizeof(VShaderInput);
 		range.memory = alloc.handle;
 
-#if DEVICE_LOCAL
-		vkh::copyDataToBuffer(&buf, range.size, 0, (char*)map, ctxt);
-#else
-		vkFlushMappedMemoryRanges(ctxt.device, 1, &range);
-#endif
 
+		#if PERSISTENT_STAGING_BUFFER || !DEVICE_LOCAL
+				vkFlushMappedMemoryRanges(ctxt.device, 1, &range);	
+		#endif
 
+		#if DEVICE_LOCAL
+			#if PERSISTENT_STAGING_BUFFER		
+				vkh::copyBuffer(stagingBuffer, buf, range.size, 0, 0, nullptr, ctxt);		
+			#else		
+				vkh::copyDataToBuffer(&buf, range.size, 0, (char*)map, commandBuffer, ctxt);	
+			#endif	
+		#endif
+		
 	}
 
 	VkDescriptorType getDescriptorType()

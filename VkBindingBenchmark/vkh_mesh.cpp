@@ -94,7 +94,7 @@ namespace vkh::Mesh
 		vkUnmapMemory(ctxt.device, stagingMemory.handle);
 
 		//copy to device local here
-		copyBuffer(stagingBuffer, m.buffer, vBufferSize+iBufferSize, 0, 0, ctxt);
+		copyBuffer(stagingBuffer, m.buffer, vBufferSize+iBufferSize, 0, 0, nullptr, ctxt);
 		freeDeviceMemory(stagingMemory);
 		vkDestroyBuffer(ctxt.device, stagingBuffer, nullptr);
 

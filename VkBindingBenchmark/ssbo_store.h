@@ -13,6 +13,6 @@ namespace ssbo_store
 	uint32_t getNumPages();
 	VkBuffer& getPage(uint32_t idx);
 	vkh::Allocation& getAlloc(uint32_t idx);
-	void updateBuffers(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, vkh::VkhContext& ctxt);
+	void updateBuffers(const glm::mat4& viewMatrix, const glm::mat4& projMatrix, VkCommandBuffer* commandBuffer, vkh::VkhContext& ctxt);
 	VkDescriptorType getDescriptorType();
 }

@@ -38,7 +38,7 @@ void createDepthBuffer();
 void loadDebugMaterial();
 void loadUBOTestMaterial(int num);
 void createGlobalShaderData();
-int bindDescriptorSets(int curPage, int pageToBind, VkCommandBuffer& cmd);
+int bindDescriptorSets(int curPage, int pageToBind, int slotToBind, VkCommandBuffer& cmd);
 
 void initRendering(vkh::VkhContext& context, uint32_t num)
 {
@@ -196,7 +196,7 @@ void createMainRenderPass(vkh::VkhContext& ctxt)
 void render(Camera::Cam& cam, const std::vector<vkh::MeshAsset>& drawCalls, const std::vector<uint32_t>& uboIdx)
 {
 	const glm::mat4 view = Camera::viewMatrix(cam);
-	glm::mat4 p = glm::perspectiveRH(glm::radians(60.0f), 800.0f / 600.0f, 0.05f, 3000.0f);
+	glm::mat4 p = glm::perspectiveRH(glm::radians(60.0f), SCREEN_W / (float)SCREEN_H, 0.05f, 3000.0f);
 	//from https://matthewwellings.com/blog/the-new-vulkan-coordinate-system/
 	//this flips the y coordinate back to positive == up, and readjusts depth range to match opengl
 	glm::mat4 vulkanCorrection = glm::mat4(
@@ -209,7 +209,9 @@ void render(Camera::Cam& cam, const std::vector<vkh::MeshAsset>& drawCalls, cons
 	glm::mat4 proj = vulkanCorrection * p;	
 	vkh::VkhContext& appContext = *appData.owningContext;
 
-	data_store::updateBuffers(view, proj, appContext);
+#if !COPY_ON_MAIN_COMMANDBUFFER
+	data_store::updateBuffers(view, proj, nullptr, appContext);
+#endif
 
 	VkResult res;	
 
@@ -227,6 +229,15 @@ void render(Camera::Cam& cam, const std::vector<vkh::MeshAsset>& drawCalls, cons
 	beginInfo.pInheritanceInfo = nullptr; // Optional
 	vkResetCommandBuffer(appData.commandBuffers[imageIndex], VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 	res = vkBeginCommandBuffer(appData.commandBuffers[imageIndex], &beginInfo);
+
+#if COPY_ON_MAIN_COMMANDBUFFER
+	data_store::updateBuffers(view, proj, &appData.commandBuffers[imageIndex], appContext);
+#endif
+
+
+	vkCmdResetQueryPool(appData.commandBuffers[imageIndex], appContext.queryPool, 0, 10);
+	vkCmdWriteTimestamp(appData.commandBuffers[imageIndex], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, appContext.queryPool, 0);
+
 
 	VkRenderPassBeginInfo renderPassInfo = {};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -255,7 +266,7 @@ void render(Camera::Cam& cam, const std::vector<vkh::MeshAsset>& drawCalls, cons
 		glm::uint32 uboSlot = uboIdx[i] >> 3;
 		glm::uint32 uboPage = uboIdx[i] & 0x7;
 
-		currentlyBound = bindDescriptorSets(currentlyBound, uboPage, appData.commandBuffers[imageIndex]);
+		currentlyBound = bindDescriptorSets(currentlyBound, uboPage, uboSlot, appData.commandBuffers[imageIndex]);
 
 		vkCmdPushConstants(
 			appData.commandBuffers[imageIndex],
@@ -292,6 +303,8 @@ void render(Camera::Cam& cam, const std::vector<vkh::MeshAsset>& drawCalls, cons
 	}
 
 	vkCmdEndRenderPass(appData.commandBuffers[imageIndex]);
+	vkCmdWriteTimestamp(appData.commandBuffers[imageIndex], VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, appContext.queryPool, 1);
+
 	res = vkEndCommandBuffer(appData.commandBuffers[imageIndex]);
 	checkf(res == VK_SUCCESS, "Error ending render pass");
 
@@ -332,14 +345,40 @@ void render(Camera::Cam& cam, const std::vector<vkh::MeshAsset>& drawCalls, cons
 	presentInfo.pResults = nullptr; // Optional
 	res = vkQueuePresentKHR(appContext.deviceQueues.transferQueue, &presentInfo);
 
+#if WITH_VK_TIMESTAMP
+	//log performance data:
+
+	uint32_t end = 0;
+	uint32_t begin = 0;
+
+	static int count = 0;
+	static float totalTime = 0.0f;
+
+	if (count++ > 1024)
+	{
+		printf("VK Render Time (avg of past 1024 frames): %f ms\n", totalTime / 1024.0f);
+		count = 0;
+		totalTime = 0;
+	}
+	float timestampFrequency = appContext.gpu.deviceProps.limits.timestampPeriod;
+
+
+	vkGetQueryPoolResults(appContext.device, appContext.queryPool, 1, 1, sizeof(uint32_t), &end, 0, VK_QUERY_RESULT_WAIT_BIT);
+	vkGetQueryPoolResults(appContext.device, appContext.queryPool, 0, 1, sizeof(uint32_t), &begin, 0, VK_QUERY_RESULT_WAIT_BIT);
+	uint32_t diff = end - begin;
+	totalTime += (diff) / (float)1e6;
+#endif
+
 }
 
-int bindDescriptorSets(int currentlyBound, int page, VkCommandBuffer& cmd)
+int bindDescriptorSets(int currentlyBound, int page, int slot, VkCommandBuffer& cmd)
 {
+	uint32_t offsetCount = DYNAMIC_UBO;
+	uint32_t offset = offsetCount > 0 ? slot : 0;
+
 	if (currentlyBound != page)
 	{
-		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, appMaterial.pipelineLayout, 0, 1, &appMaterial.descSets[page], 0, 0);
+		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, appMaterial.pipelineLayout, 0, 1, &appMaterial.descSets[page], offsetCount, &offset);
 	}
-
 	return page;
 }

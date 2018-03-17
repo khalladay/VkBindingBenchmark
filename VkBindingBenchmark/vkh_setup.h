@@ -579,6 +579,19 @@ namespace vkh
 		}
 	}
 
+	void createQueryPool(VkQueryPool& outPool, VkDevice& device, int queryCount)
+	{
+		VkQueryPoolCreateInfo createInfo = {};
+		createInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+		createInfo.pNext = nullptr;
+		createInfo.queryType = VK_QUERY_TYPE_TIMESTAMP;
+		createInfo.queryCount = queryCount;
+
+		VkResult res = vkCreateQueryPool(device, &createInfo, nullptr, &outPool);
+		checkf(res == VK_SUCCESS, "Error creating query pool");
+
+	}
+
 	void initContext(VkhContextCreateInfo& info, const char* appName, HINSTANCE Instance, HWND wndHdl, VkhContext& ctxt)
 	{
 		createInstance(ctxt, appName);
@@ -599,6 +612,8 @@ namespace vkh
 
 		createVkSemaphore(ctxt.imageAvailableSemaphore, ctxt.device);
 		createVkSemaphore(ctxt.renderFinishedSemaphore, ctxt.device);
+
+		createQueryPool(ctxt.queryPool, ctxt.device, 10);
 
 		ctxt.frameFences.resize(ctxt.swapChain.imageViews.size());
 
