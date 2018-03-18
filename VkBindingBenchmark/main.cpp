@@ -31,10 +31,12 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int
 
 	vkh::VkhContextCreateInfo ctxtInfo = {};
 	ctxtInfo.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+	ctxtInfo.types.push_back(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
 	ctxtInfo.types.push_back(VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
 	ctxtInfo.types.push_back(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
 	ctxtInfo.types.push_back(VK_DESCRIPTOR_TYPE_SAMPLER);
 
+	ctxtInfo.typeCounts.push_back(512);
 	ctxtInfo.typeCounts.push_back(512);
 	ctxtInfo.typeCounts.push_back(512);
 	ctxtInfo.typeCounts.push_back(512);

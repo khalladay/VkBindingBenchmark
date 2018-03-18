@@ -8,6 +8,7 @@
 #include "config.h"
 #include <glm/gtx/transform.hpp>
 #include <glm/glm.hpp>
+#include "shader_inputs.h"
 
 struct RenderingData
 {
@@ -373,8 +374,13 @@ void render(Camera::Cam& cam, const std::vector<vkh::MeshAsset>& drawCalls, cons
 
 int bindDescriptorSets(int currentlyBound, int page, int slot, VkCommandBuffer& cmd)
 {
+	vkh::VkhContext& appContext = *appData.owningContext;
+
+	size_t uboAlignment = appContext.gpu.deviceProps.limits.minUniformBufferOffsetAlignment;
+	size_t dynamicAlignment = (sizeof(VShaderInput) / uboAlignment + ((sizeof(VShaderInput) % uboAlignment) > 0 ? uboAlignment : 0));
+
 	uint32_t offsetCount = DYNAMIC_UBO;
-	uint32_t offset = offsetCount > 0 ? slot : 0;
+	uint32_t offset = offsetCount > 0 ? slot * dynamicAlignment :0;
 
 	if (currentlyBound != page)
 	{

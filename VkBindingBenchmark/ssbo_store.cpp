@@ -26,7 +26,7 @@ namespace ssbo_store
 	void init(vkh::VkhContext& _ctxt)
 	{
 		ctxt = &_ctxt;
-		num = 32000;
+		num = 511;
 
 		vkh::createBuffer(
 			buf, 

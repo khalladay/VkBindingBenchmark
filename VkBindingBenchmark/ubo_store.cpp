@@ -12,6 +12,10 @@ namespace ubo_store
 	uint32_t numPages;
 	uint32_t size;
 
+	//indexes into a dynamic ubo must be a multiple of minUniformBufferOffsetAlignment
+	//so each slot may need to be slightly larger than the size of VShaderInput
+	uint32_t slotSize;
+
 	vkh::VkhContext* ctxt;
 
 	struct UBOPage
@@ -37,8 +41,19 @@ namespace ubo_store
 	void init(vkh::VkhContext& _ctxt)
 	{		
 		ctxt = &_ctxt;
+
+		size_t uboAlignment = _ctxt.gpu.deviceProps.limits.minUniformBufferOffsetAlignment;
+		size_t dynamicAlignment = (sizeof(VShaderInput) / uboAlignment + ((sizeof(VShaderInput) % uboAlignment) > 0 ? uboAlignment : 0));
+
+		slotSize = dynamicAlignment;
+
+#if DYNAMIC_UBO
+		countPerPage = _ctxt.gpu.deviceProps.limits.maxUniformBufferRange / dynamicAlignment;
+		size = slotSize * countPerPage;
+#else
 		countPerPage = 256;
-		size = (sizeof(VShaderInput) * 256);
+		size = (sizeof(VShaderInput) * countPerPage);
+#endif
 	}
 
 	UBOPage& createNewPage()
@@ -140,12 +155,19 @@ namespace ubo_store
 			UBOPage page = pages[p];
 			VShaderInput* objPtr = (VShaderInput*)page.map;
 
+#if DYNAMIC_UBO
+			char* mapCharPtr = (char*)page.map;
+#endif
+
 			for (uint32_t i = 0; i < countPerPage; ++i)
 			{
+#if DYNAMIC_UBO				
+				VShaderInput slotInput = { projMatrix * viewMatrix, glm::transpose(glm::inverse(viewMatrix)) };
+				memcpy(&mapCharPtr[i * slotSize], &slotInput, sizeof(VShaderInput));
+#else
 				objPtr[i].model = projMatrix * viewMatrix;
-
-				//all objects use an identity model matrix
 				objPtr[i].normal = glm::transpose(glm::inverse(viewMatrix));
+#endif
 			}
 
 			VkMappedMemoryRange curRange = {};

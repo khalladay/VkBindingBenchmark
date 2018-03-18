@@ -4,8 +4,8 @@
 #define SCREEN_H 720
 
 //Test Categories
-#define UBO_TEST 1
-#define SSBO_TEST 0
+#define UBO_TEST 0
+#define SSBO_TEST 1
 #define PUSH_TEST 0
 
 //What mesh to test
@@ -15,12 +15,11 @@
 //Test Modifiers
 #define DYNAMIC_UBO 0
 #define DEVICE_LOCAL 1
-#define COMBINE_MESHES 0
-#define SHUFFLE_MESHES 0
 #define WITH_VK_TIMESTAMP 0
-
 #define PERSISTENT_STAGING_BUFFER 0
-#define COPY_ON_MAIN_COMMANDBUFFER 1
+#define COPY_ON_MAIN_COMMANDBUFFER 0
+#define COMBINE_MESHES 0
+#define SHUFFLE_MESHES 1
 
 #if UBO_TEST
 	#define data_store ubo_store
@@ -79,5 +78,25 @@ PUSH_TEST   |		9.37				|			  |				 |		1.66	  |			10.30	|
 
 
 
+
+*/
+
+/*
+TESTING METHOD - set to "cool" mode, set to "high performance" , plugged in
+
+Using Open hardware monitor, wait for CPU cores to be below 65 C
+
+Numbers are an average of 4096 frames, not using the first 1024 frames of the application
+
+SHUFFLE_MESHES is ALWAYS ON 
+COMBINE MESHES IS ALWAYS OFF
+
+
+Sponza -> SSBO set to 511 -> 394 meshes
+
+			| (No Modifier) | DYNAMIC_UBO | DEVICE_LOCAL | DEVICE_LOCAL + DYNAMIC UBO
+UBO_TEST	|		0.83	|		0.78  |		1.61	 |  0.96
+SSBO_TEST	|		2.57	|			  |				 |
+PUSH_TEST   |			    |			  |				 |
 
 */
