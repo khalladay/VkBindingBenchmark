@@ -406,7 +406,7 @@ namespace vkh
 		vkBindBufferMemory(ctxt.device, outBuffer, bufferMemory.handle, bufferMemory.offset);
 	}
 
-	void copyDataToBuffer(VkBuffer* buffer, uint32_t dataSize, uint32_t dstOffset, char* data, VkCommandBuffer* commandBuffer, VkhContext& ctxt)
+	void copyDataToBuffer(VkBuffer* buffer, uint32_t dataSize, uint32_t dstOffset, char* data, VkhContext& ctxt)
 	{
 		VkBuffer stagingBuffer;
 		vkh::Allocation stagingMemory;
@@ -426,17 +426,13 @@ namespace vkh
 
 		vkUnmapMemory(ctxt.device, stagingMemory.handle);
 
-		if (commandBuffer)
-		{
-			vkh::copyBuffer(stagingBuffer, *buffer, dataSize, 0, dstOffset, *commandBuffer);
-		}
-		else
-		{
-			vkh::VkhCommandBuffer scratch = vkh::beginScratchCommandBuffer(vkh::ECommandPoolType::Transfer, ctxt);
-			vkh::copyBuffer(stagingBuffer, *buffer, dataSize, 0, dstOffset, scratch);
-			vkh::submitScratchCommandBuffer(scratch);
-			vkh::freeDeviceMemory(stagingMemory);
-		}
+		vkh::VkhCommandBuffer scratch = vkh::beginScratchCommandBuffer(vkh::ECommandPoolType::Transfer, ctxt);
+		vkh::copyBuffer(stagingBuffer, *buffer, dataSize, 0, dstOffset, scratch);
+		vkh::submitScratchCommandBuffer(scratch);
+		
+		vkDestroyBuffer(ctxt.device, stagingBuffer, 0);
+		vkh::freeDeviceMemory(stagingMemory);
+
 	}
 
 	void createImage(VkImage& outImage, uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, const VkhContext& ctxt)

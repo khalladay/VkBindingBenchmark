@@ -25,7 +25,12 @@ namespace ubo_store
 		std::deque<uint32_t> freeIndices;
 
 #if DEVICE_LOCAL
+#if PERSISTENT_STAGING_BUFFER
+		void* map;
+
+#else
 		char* map;
+#endif
 #else
 		void* map;
 #endif
@@ -80,13 +85,21 @@ namespace ubo_store
 			page.stagingAlloc,
 			size,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+#if COPY_ON_MAIN_COMMANDBUFFER
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+#else
 			VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+#endif
 			_ctxt
 		);
 #endif
 
 #if DEVICE_LOCAL
+#if PERSISTENT_STAGING_BUFFER
+		vkMapMemory(_ctxt.device, page.stagingAlloc.handle, page.stagingAlloc.offset, page.stagingAlloc.size, 0, &page.map);
+#else
 		page.map = (char*)malloc(size);
+#endif
 #else
 		vkMapMemory(_ctxt.device, page.alloc.handle, page.alloc.offset, page.alloc.size, 0, &page.map);
 #endif
@@ -172,15 +185,21 @@ namespace ubo_store
 
 			VkMappedMemoryRange curRange = {};
 			curRange.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+#if PERSISTENT_STAGING_BUFFER
+			curRange.memory = page.stagingAlloc.handle;
+			curRange.offset = page.stagingAlloc.offset;
+
+#else
 			curRange.memory = page.alloc.handle;
 			curRange.offset = page.alloc.offset;
+#endif
 			curRange.size = page.alloc.size;
 			curRange.pNext = nullptr;
 
 			rangesToUpdate[p] = curRange;
 		}
 
-		#if !DEVICE_LOCAL
+		#if !DEVICE_LOCAL || PERSISTENT_STAGING_BUFFER
 			vkFlushMappedMemoryRanges(ctxt.device, rangesToUpdate.size(), rangesToUpdate.data());
 		#endif
 
@@ -188,10 +207,9 @@ namespace ubo_store
 			for (uint32_t p = 0; p < pages.size(); ++p)
 			{
 				#if PERSISTENT_STAGING_BUFFER	
-					vkh::copyDataToBuffer(&pages[p].stagingBuf, size, 0, (char*)pages[p].map, commandBuffer, ctxt);
 					vkh::copyBuffer(pages[p].stagingBuf, pages[p].buf, size, 0, 0, commandBuffer, ctxt);
 				#else
-					vkh::copyDataToBuffer(&pages[p].buf, size, 0, (char*)pages[p].map, commandBuffer, ctxt);
+					vkh::copyDataToBuffer(&pages[p].buf, size, 0, (char*)pages[p].map, ctxt);
 				#endif
 			}
 		#endif

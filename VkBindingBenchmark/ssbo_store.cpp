@@ -5,7 +5,7 @@
 #include "config.h"
 namespace ssbo_store
 {
-#if DEVICE_LOCAL
+#if DEVICE_LOCAL && !PERSISTENT_STAGING_BUFFER
 	char* map;
 #else
 	void* map;
@@ -26,7 +26,12 @@ namespace ssbo_store
 	void init(vkh::VkhContext& _ctxt)
 	{
 		ctxt = &_ctxt;
+
+#if BISTRO_TEST
+		num = 25000;
+#else
 		num = 511;
+#endif
 
 		vkh::createBuffer(
 			buf, 
@@ -41,21 +46,30 @@ namespace ssbo_store
 #endif
 			_ctxt);
 
-#if DEVICE_LOCAL
-		map = (char*)malloc(sizeof(VShaderInput) * num);
-#else
-		vkMapMemory(_ctxt.device, alloc.handle, alloc.offset, alloc.size, 0, &map);
-#endif
-
 #if PERSISTENT_STAGING_BUFFER
 		vkh::createBuffer(
 			stagingBuffer,
 			stagingAlloc,
 			sizeof(VShaderInput) * num,
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+#if COPY_ON_MAIN_COMMANDBUFFER
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+#else
 			VK_MEMORY_PROPERTY_HOST_CACHED_BIT,
+#endif
 			_ctxt);
 #endif
+
+#if DEVICE_LOCAL
+#if PERSISTENT_STAGING_BUFFER
+		vkMapMemory(_ctxt.device, stagingAlloc.handle, stagingAlloc.offset, stagingAlloc.size, 0, &map);
+#else
+		map = (char*)malloc(sizeof(VShaderInput) * num);
+#endif
+#else
+		vkMapMemory(_ctxt.device, alloc.handle, alloc.offset, alloc.size, 0, &map);
+#endif
+
 
 		for (uint32_t i = 0; i < num; ++i)
 		{
@@ -110,10 +124,15 @@ namespace ssbo_store
 
 		VkMappedMemoryRange range;
 		range.sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+#if PERSISTENT_STAGING_BUFFER
+		range.offset = stagingAlloc.offset;
+		range.memory = stagingAlloc.handle;
+#else
 		range.offset = alloc.offset;
+		range.memory = alloc.handle;
+#endif
 		range.pNext = nullptr;
 		range.size = num * sizeof(VShaderInput);
-		range.memory = alloc.handle;
 
 
 		#if PERSISTENT_STAGING_BUFFER || !DEVICE_LOCAL
@@ -122,9 +141,9 @@ namespace ssbo_store
 
 		#if DEVICE_LOCAL
 			#if PERSISTENT_STAGING_BUFFER		
-				vkh::copyBuffer(stagingBuffer, buf, range.size, 0, 0, nullptr, ctxt);		
+				vkh::copyBuffer(stagingBuffer, buf, range.size, 0, 0, commandBuffer, ctxt);
 			#else		
-				vkh::copyDataToBuffer(&buf, range.size, 0, (char*)map, commandBuffer, ctxt);	
+				vkh::copyDataToBuffer(&buf, range.size, 0, (char*)map, ctxt);	
 			#endif	
 		#endif
 		
