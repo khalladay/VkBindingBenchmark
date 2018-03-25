@@ -9,7 +9,7 @@ struct tData
 
 layout(binding=0,set=0)buffer TRANSFORM_DATA
 {
-	tData d[511];
+	tData d[25000];
 }transform;
 
 layout(push_constant) uniform transformData

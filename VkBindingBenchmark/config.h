@@ -5,19 +5,19 @@
 
 //Test Categories
 #define UBO_TEST 0
-#define SSBO_TEST 0
-#define PUSH_TEST 1
+#define SSBO_TEST 1
+#define PUSH_TEST 0
 
 //What mesh to test
-#define BISTRO_TEST 1
-#define SPONZA_TEST 0
+#define BISTRO_TEST 0
+#define SPONZA_TEST 1
 
 //Test Modifiers
 #define DYNAMIC_UBO 0
-#define DEVICE_LOCAL 0
+#define DEVICE_LOCAL 1
 #define WITH_VK_TIMESTAMP 0
-#define PERSISTENT_STAGING_BUFFER 0
-#define COPY_ON_MAIN_COMMANDBUFFER 0
+#define PERSISTENT_STAGING_BUFFER 1
+#define COPY_ON_MAIN_COMMANDBUFFER 1
 #define COMBINE_MESHES 0
 #define SHUFFLE_MESHES 1
 
@@ -55,8 +55,8 @@ static_assert(UBO_TEST + DYNAMIC_UBO == 0 || !DYNAMIC_UBO || UBO_TEST + DYNAMIC_
 /*
 Sponza
 			| (No Modifier) | DYNAMIC_UBO | DEVICE_LOCAL | COMBINE_MESHES |  SHUFFLE_MESHES	|
-UBO_TEST	|		1.01	|	1.09	  |		1.62	 |		0.73	  |		1.05		|
-SSBO_TEST	|		4.55	|			  |		5.73	 |		4.55	  |		4.55		|
+UBO_TEST	|		1.01	|	1.09	  |		0.97	 |		0.73	  |		1.05		|
+SSBO_TEST	|		3.08	|			  |		0.89	 |		1.56	  |		2.53		|
 PUSH_TEST   |		0.74    |			  |				 |		0.70	  |		0.73		|
 
 Interior+Exterior
@@ -97,7 +97,7 @@ UBO_TEST	|		6.57	|	6.93	  |		16.44	 |  17.36
 SSBO_TEST	|		41.42	|			  |		7.84	 |
 PUSH_TEST   |		10.3    |			  |				 |
 -------------
-			| Persistent staging    |	BOTH
+			| Persistent staging    |	BOTH (persistent staging + main command buffer)
 UBO_TEST	|		16.0			|	6.63
 DYNAMIC_UBO	|		16.57			|	7.20
 SSBO_TEST	|		7.43			|	6.69
@@ -106,6 +106,4 @@ SSBO_TEST	|		7.43			|	6.69
 Notes: UBO_STORE set to 256 per page, when non dynamic, saw no real gains switching this to 511 (was the same as the BOTH test with 256)
 
 Note: Persistent staging buffer without being on the main buffer is faster if it isn't host visible, on the mian buffer, it's faster host visible, wtf? 
-
-NEED TO RE-TEST SSBO FOR BISTRO - THE SHADER DIDN'T HAVE THE RIGHT AMOUNT OF SLOTS IN THE BUFFER
 */

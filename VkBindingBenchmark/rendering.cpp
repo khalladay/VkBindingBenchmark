@@ -281,10 +281,8 @@ void render(Camera::Cam& cam, const std::vector<vkh::MeshAsset>& drawCalls, cons
 		
 		//0 is MVP, 1 is normal
 		glm::mat4 frameData[2];
-		glm::mat4 vp = vulkanCorrection * p * view;
-		frameData[0] = vp * glm::scale(glm::vec3(0.1, 0.1, 0.1));
 
-		//all objects use an identity model matrix
+		frameData[0] = vulkanCorrection * p * view;
 		frameData[1] = glm::transpose(glm::inverse(view));
 
 		vkCmdPushConstants(

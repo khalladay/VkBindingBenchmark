@@ -81,6 +81,8 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int
 
 		std::swap(testMesh[i], testMesh[newSlot]);
 		std::swap(uboIdx[i], uboIdx[newSlot]);
+		printf("%i\n", uboIdx[i] >> 3);
+
 	}
 
 #endif
@@ -124,7 +126,7 @@ void mainLoop()
 		float forwardBack = OS::getKey(KeyCode::KEY_W) ? 1.0f : (OS::getKey(KeyCode::KEY_S) ? -1.0f : 0.0f);
 
 		glm::vec3 translation = (Camera::localForward(worldCamera) * forwardBack) + (Camera::localRight(worldCamera) * leftRight);
-		Camera::translate(worldCamera, translation * 10.0f * (float)dt);
+		Camera::translate(worldCamera, translation * 2.0f * (float)dt);
 
 		if (OS::getKey(KEY_ESCAPE))
 		{
