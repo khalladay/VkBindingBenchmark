@@ -93,7 +93,11 @@ void loadUBOTestMaterial(int num)
 	createInfo.pushConstantRange = sizeof(uint32_t);
 	createInfo.descSetLayouts.push_back(appMaterial.descSetLayout);
 
+#if WITH_COMPLEX_SHADER
+	vkh::createBasicMaterial(VERT_SHADER_NAME, "..\\data\\_generated\\builtshaders\\random_frag.frag.spv", *appData.owningContext, createInfo);
+#else
 	vkh::createBasicMaterial(VERT_SHADER_NAME, "..\\data\\_generated\\builtshaders\\debug_normals.frag.spv", *appData.owningContext, createInfo);
+#endif
 
 	//allocate a descriptor set for each ubo transform array
 	appMaterial.descSets.resize(data_store::getNumPages());
@@ -132,7 +136,11 @@ void loadDebugMaterial()
 	createInfo.pushConstantStages = VK_SHADER_STAGE_VERTEX_BIT;
 	createInfo.pushConstantRange = sizeof(glm::mat4)*2;
 
+#if WITH_COMPLEX_SHADER
+	vkh::createBasicMaterial("..\\data\\_generated\\builtshaders\\common_vert.vert.spv", "..\\data\\_generated\\builtshaders\\random_frag.frag.spv", *appData.owningContext, createInfo);
+#else
 	vkh::createBasicMaterial("..\\data\\_generated\\builtshaders\\common_vert.vert.spv", "..\\data\\_generated\\builtshaders\\debug_normals.frag.spv", *appData.owningContext, createInfo);
+#endif
 }
 
 
