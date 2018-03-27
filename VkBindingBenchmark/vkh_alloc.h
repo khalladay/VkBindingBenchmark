@@ -147,11 +147,6 @@ namespace vkh::allocators::pool
 		DeviceMemoryBlock newBlock = {};
 		VkResult res = vkAllocateMemory(state.context->device, &info, nullptr, &newBlock.mem.handle);
 
-		if (res != VK_SUCCESS)
-		{
-			printf("WTF MATE\n");
-		}
-
 		checkf(res != VK_ERROR_OUT_OF_DEVICE_MEMORY, "Out of device memory");
 		checkf(res != VK_ERROR_TOO_MANY_OBJECTS, "Attempting to create too many allocations")
 		checkf(res == VK_SUCCESS, "Error allocating memory in passthrough allocator");
