@@ -48,8 +48,7 @@ namespace ubo_store
 		ctxt = &_ctxt;
 
 		size_t uboAlignment = _ctxt.gpu.deviceProps.limits.minUniformBufferOffsetAlignment;
-		size_t dynamicAlignment = (sizeof(VShaderInput) / uboAlignment + ((sizeof(VShaderInput) % uboAlignment) > 0 ? uboAlignment : 0));
-
+		size_t dynamicAlignment = (sizeof(VShaderInput) / uboAlignment) + (sizeof(VShaderInput) % uboAlignment);
 		slotSize = dynamicAlignment;
 
 #if DYNAMIC_UBO

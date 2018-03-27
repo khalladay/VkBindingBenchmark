@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <atlstr.h>
 
-#if _DEBUG
+//#if _DEBUG
 #define NDEBUG 1
 
 #define checkf(expr, format, ...) if (!(expr))																\
@@ -14,7 +14,7 @@
     MessageBox(NULL,dbgstr, "FATAL ERROR", MB_OK);															\
 	DebugBreak();																							\
 }
-#else
-#undef NDEBUG
-#define checkf(expr, format, ...) ;
-#endif
+//#else
+//#undef NDEBUG
+//#define checkf(expr, format, ...) ;
+//#endif

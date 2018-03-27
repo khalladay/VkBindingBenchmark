@@ -245,7 +245,7 @@ namespace vkh
 				{
 					for (uint32_t reqIdx = 0; reqIdx < deviceExtensions.size(); ++reqIdx)
 					{
-						if (strcmp(availableExtensions[extIdx].extensionName, deviceExtensions[i]) == 0)
+						if (strcmp(availableExtensions[extIdx].extensionName, deviceExtensions[reqIdx]) == 0)
 						{
 							foundExtensionCount++;
 						}
@@ -601,7 +601,7 @@ namespace vkh
 		createPhysicalDevice(ctxt);
 		createLogicalDevice(ctxt);
 
-		vkh::allocators::passthrough::activate(&ctxt);
+		vkh::allocators::pool::activate(&ctxt);
 
 		createSwapchainForSurface(ctxt);
 		createCommandPool(ctxt.gfxCommandPool, ctxt.device, ctxt.gpu, ctxt.gpu.graphicsQueueFamilyIdx);

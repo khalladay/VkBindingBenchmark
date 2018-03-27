@@ -81,7 +81,7 @@ int CALLBACK WinMain(HINSTANCE Instance, HINSTANCE pInstance, LPSTR cmdLine, int
 
 		std::swap(testMesh[i], testMesh[newSlot]);
 		std::swap(uboIdx[i], uboIdx[newSlot]);
-		printf("%i\n", uboIdx[i] >> 3);
+	//	printf("%i\n", uboIdx[i] >> 3);
 
 	}
 

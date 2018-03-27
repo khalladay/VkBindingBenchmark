@@ -9,8 +9,8 @@
 #define PUSH_TEST 0
 
 //What mesh to test
-#define BISTRO_TEST 0
-#define SPONZA_TEST 1
+#define BISTRO_TEST 1
+#define SPONZA_TEST 0
 
 //Test Modifiers
 #define DYNAMIC_UBO 1

@@ -133,7 +133,7 @@ namespace vkh::allocators::pool
 		state.memTypeAllocSizes.resize(memProperties.memoryTypeCount);
 		state.memPools.resize(memProperties.memoryTypeCount);
 
-		state.pageSize = context->gpu.deviceProps.limits.bufferImageGranularity;
+		state.pageSize = 1024; //can't use context->gpu.deviceProps.limits.bufferImageGranularity because some AMD cards set this to 1
 		state.memoryBlockMinSize = state.pageSize * 10;
 	}
 
@@ -147,9 +147,14 @@ namespace vkh::allocators::pool
 		DeviceMemoryBlock newBlock = {};
 		VkResult res = vkAllocateMemory(state.context->device, &info, nullptr, &newBlock.mem.handle);
 
+		if (res != VK_SUCCESS)
+		{
+			printf("WTF MATE\n");
+		}
+
 		checkf(res != VK_ERROR_OUT_OF_DEVICE_MEMORY, "Out of device memory");
 		checkf(res != VK_ERROR_TOO_MANY_OBJECTS, "Attempting to create too many allocations")
-			checkf(res == VK_SUCCESS, "Error allocating memory in passthrough allocator");
+		checkf(res == VK_SUCCESS, "Error allocating memory in passthrough allocator");
 
 		newBlock.mem.type = memoryType;
 		newBlock.mem.size = newPoolSize;
