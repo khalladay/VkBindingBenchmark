@@ -383,7 +383,7 @@ int bindDescriptorSets(int currentlyBound, int page, int slot, VkCommandBuffer& 
 	vkh::VkhContext& appContext = *appData.owningContext;
 
 	size_t uboAlignment = appContext.gpu.deviceProps.limits.minUniformBufferOffsetAlignment;
-	size_t dynamicAlignment = (sizeof(VShaderInput) / uboAlignment + ((sizeof(VShaderInput) % uboAlignment) > 0 ? uboAlignment : 0));
+	size_t dynamicAlignment = ( (sizeof(VShaderInput) / uboAlignment) * uboAlignment)   + (( (sizeof(VShaderInput) % uboAlignment) > 0 ? uboAlignment : 0));
 
 	uint32_t offsetCount = DYNAMIC_UBO;
 	uint32_t offset = offsetCount > 0 ? slot * dynamicAlignment :0;
