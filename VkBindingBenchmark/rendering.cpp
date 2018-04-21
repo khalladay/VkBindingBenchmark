@@ -228,7 +228,13 @@ void render(Camera::Cam& cam, const std::vector<vkh::MeshAsset>& drawCalls, cons
 	uint32_t imageIndex;
 
 	res = vkAcquireNextImageKHR(appContext.device, appContext.swapChain.swapChain, UINT64_MAX, appContext.imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
+
+#if WITH_FENCE_CORRECTION
+	vkWaitForFences(appContext.device, 1, &appContext.frameFences[imageIndex], VK_FALSE, 5000000000);
+#else
 	vkh::waitForFence(appContext.frameFences[imageIndex], appContext.device);
+#endif
+
 	vkResetFences(appContext.device, 1, &appContext.frameFences[imageIndex]);
 
 	//record drawing

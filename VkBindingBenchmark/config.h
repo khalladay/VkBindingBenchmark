@@ -13,7 +13,7 @@
 #define SPONZA_TEST 0
 
 //Test Modifiers
-#define DYNAMIC_UBO 1
+#define DYNAMIC_UBO 0
 #define DEVICE_LOCAL 1
 #define WITH_VK_TIMESTAMP 0
 #define PERSISTENT_STAGING_BUFFER 1
@@ -22,6 +22,11 @@
 #define SHUFFLE_MESHES 1
 
 #define WITH_COMPLEX_SHADER 1
+
+//this was a correction to how I was waiting on fences
+//made after I published the perf results. Defaulting to off to reproducibility
+//but probably a good idea
+#define WITH_FENCE_CORRECTION 0
 
 #if UBO_TEST
 	#define data_store ubo_store

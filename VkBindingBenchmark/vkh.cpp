@@ -65,9 +65,9 @@ namespace vkh
 	{
 		VkFenceCreateInfo fenceInfo = {};
 		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		fenceInfo.pNext = NULL;
-		fenceInfo.flags = 0;
-		VkResult vk_res = vkCreateFence(device, &fenceInfo, NULL, &outFence);
+		fenceInfo.pNext = nullptr;
+		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		VkResult vk_res = vkCreateFence(device, &fenceInfo, nullptr, &outFence);
 		checkf(vk_res == VK_SUCCESS, "Error creating vk fence");
 	}
 
@@ -124,7 +124,6 @@ namespace vkh
 
 		if (depthAttachment)
 		{
-			VkAttachmentReference depthRef = { 0 };
 			depthRef.attachment = attachIdx;
 			depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
